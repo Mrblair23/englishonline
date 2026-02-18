@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  input, textarea, select, button {
+    @apply outline-none focus:outline-none;
+  }
+}
+
+@layer components {
+  .bm-page-bg {
+    @apply bg-[#fdfaf6];
+  }
+
+  .bm-page-title {
+    @apply text-3xl sm:text-4xl font-extrabold text-gray-900;
+  }
+
+  .bm-page-subtitle {
+    @apply text-gray-600;
+  }
+
+  .bm-card {
+    @apply bg-white border border-gray-100 rounded-[2.5rem] shadow-sm;
+  }
+
+  .bm-card-pad {
+    @apply p-6 sm:p-8;
+  }
+
+  .bm-card-pad-lg {
+    @apply p-8 md:p-10;
+  }
+
+  .bm-card-elevated {
+    @apply shadow-xl;
+  }
+
+  .bm-table-card {
+    @apply bg-white border border-gray-100 rounded-[2.5rem] shadow-sm overflow-hidden;
+  }
+
+  .bm-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:shadow-lg transition-all;
+  }
+
+  .bm-btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors;
+  }
+
+  .bm-btn-soft {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors;
+  }
+
+  .bm-btn-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition-colors;
+  }
+
+  .bm-input {
+    @apply w-full px-4 py-3 border-2 border-gray-200 rounded-2xl bg-white focus:outline-none focus:border-amber-500;
+  }
+
+  .bm-input-soft {
+    @apply w-full px-4 py-3 border-2 border-gray-200 rounded-2xl bg-gray-50 text-sm focus:border-amber-500 focus:bg-white;
+  }
+
+  .bm-chip {
+    @apply rounded-full px-4 py-2 text-sm font-semibold transition-colors border border-gray-200 bg-white text-gray-700 hover:bg-gray-50;
+  }
+
+  .bm-chip-active {
+    @apply bg-gray-900 text-white border-transparent;
+  }
+}

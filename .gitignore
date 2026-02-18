@@ -1,0 +1,23 @@
+# Dependencies
+node_modules
+
+# Build output
+build
+dist
+
+# Environment
+.env
+.env.*
+
+# Keys / sensitive
+GooglecloudEOLmeetskey.json
+resendkey.odt
+
+# Documents
+*.odt
+
+# Debug / profiles
+*.cpuprofile
+
+# Old copied project folder
+anything
