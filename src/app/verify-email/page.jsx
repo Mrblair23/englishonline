@@ -34,7 +34,7 @@ export default function VerifyEmailPage() {
 
         setTimeout(() => {
           if (isActive) {
-            window.location.href = "/login";
+            window.location.href = "/account/signin";
           }
         }, 2500);
       } catch (error) {
@@ -81,7 +81,7 @@ export default function VerifyEmailPage() {
           {message || "This verification link is invalid or has expired."}
         </p>
         <button
-          onClick={() => (window.location.href = "/login")}
+          onClick={() => (window.location.href = "/account/signin")}
           className="inline-block bg-[#1e3a8a] text-white py-3 px-6 rounded-2xl font-bold hover:brightness-110 transition-all"
         >
           Go to Login
