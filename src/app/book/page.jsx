@@ -35,11 +35,12 @@ export default function BookClassPage() {
 
   const { classType, duration, skillFocus, timezone } = filters;
 
-  if (loading) return null;
-  if (!user) {
-    if (typeof window !== "undefined") window.location.href = "/account/signin";
-    return null;
-  }
+  useEffect(() => {
+    if (loading) return;
+    if (!user && typeof window !== "undefined") {
+      window.location.href = "/account/signin";
+    }
+  }, [loading, user]);
 
   useEffect(() => {
     if (!user) return;
@@ -51,6 +52,9 @@ export default function BookClassPage() {
     let isActive = true;
 
     async function loadSlots() {
+
+  if (loading) return null;
+  if (!user) return null;
       setSlotsLoading(true);
       setSlotsError("");
 
