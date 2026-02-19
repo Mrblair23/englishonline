@@ -1,21 +1,35 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { AuthContext } from "@/context/AuthContext";
 
 const CountryContext = createContext();
 
 export function CountryProvider({ children }) {
+  const auth = useContext(AuthContext);
+  const authBusy = Boolean(auth?.loading || auth?.hydrating);
+  const currentUser = authBusy ? null : auth?.user;
+  const isAdmin = currentUser?.role === "admin";
+
   const [country, setCountry] = useState("CO"); // Default to Colombia
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if country preference is saved in localStorage
+    if (!isAdmin) {
+      setCountry("CO");
+      setLoading(false);
+      return;
+    }
+
+    // Admin-only: load preference from localStorage
     const savedCountry = localStorage.getItem("preferredCountry");
-    if (savedCountry) {
+    if (savedCountry === "CO" || savedCountry === "US") {
       setCountry(savedCountry);
     }
     setLoading(false);
-  }, []);
+  }, [isAdmin]);
 
   const changeCountry = (newCountry) => {
+    if (!isAdmin) return;
+    if (newCountry !== "CO" && newCountry !== "US") return;
     setCountry(newCountry);
     localStorage.setItem("preferredCountry", newCountry);
   };

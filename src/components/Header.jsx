@@ -151,8 +151,10 @@ export default function Header() {
               </a>
             ))}
 
-            {/* Country Selector - Desktop */}
-            <CountrySelector variant="compact" />
+            {/* Currency Selector (Admin only) - Desktop */}
+            {currentUser?.role === "admin" ? (
+              <CountrySelector variant="compact" />
+            ) : null}
 
             {/* Language Toggle - Desktop */}
             <button
@@ -257,7 +259,9 @@ export default function Header() {
 
                 {/* Country Selector - Mobile */}
                 <div className="pt-4">
-                  <CountrySelector variant="compact" />
+                  {currentUser?.role === "admin" ? (
+                    <CountrySelector variant="compact" />
+                  ) : null}
                 </div>
 
                 {/* Language Toggle - Mobile with larger touch target */}

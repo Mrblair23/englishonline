@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CountrySelector from "@/components/CountrySelector";
@@ -9,6 +9,7 @@ import {
   calculatePricePerClass,
 } from "@/utils/useCountry";
 import { useLanguage } from "@/utils/useLanguage";
+import { AuthContext } from "@/context/AuthContext";
 import {
   Check,
   Sparkles,
@@ -23,6 +24,9 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(true);
   const { country } = useCountry();
   const { language } = useLanguage();
+  const auth = useContext(AuthContext);
+  const authBusy = Boolean(auth?.loading || auth?.hydrating);
+  const currentUser = authBusy ? null : auth?.user;
 
   const t = (translations) => translations[language] || translations.en;
 
@@ -72,8 +76,8 @@ export default function PricingPage() {
             })}
           </p>
 
-          {/* Country Selector */}
-          <CountrySelector />
+          {/* Currency Selector (Admin only) */}
+          {currentUser?.role === "admin" ? <CountrySelector /> : null}
 
           {/* Price Psychology Message */}
           <div className="inline-block bg-[#3FA9A6]/10 border border-[#3FA9A6]/30 rounded-2xl px-6 py-3 mt-4">
