@@ -10,10 +10,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const navItems = [
-  { name: "Dashboard", href: "/student/dashboard", icon: <LayoutDashboard size={18} /> },
-  { name: "My classes", href: "/student/classes", icon: <Calendar size={18} /> },
-  { name: "Profile", href: "/student/profile", icon: <UserRound size={18} /> },
-  { name: "Settings", href: "/student/settings", icon: <Settings size={18} /> },
+  { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
+  { name: "My classes", href: "/my-bookings", icon: <Calendar size={18} /> },
+  { name: "Profile", href: "/settings", icon: <UserRound size={18} /> },
+  { name: "Settings", href: "/settings", icon: <Settings size={18} /> },
 ];
 
 export default function StudentLayout({ children, currentPage = "dashboard" }) {

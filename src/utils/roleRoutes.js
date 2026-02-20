@@ -1,7 +1,7 @@
 export const ROLE_ROUTES = Object.freeze({
   admin: "/admin/dashboard",
   teacher: "/teacher/dashboard",
-  student: "/student/dashboard",
+  student: "/dashboard",
 });
 
 export function isRole(role) {
