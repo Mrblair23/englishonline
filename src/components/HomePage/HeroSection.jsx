@@ -2,7 +2,7 @@ import { ArrowRight, Calendar, Award, Sparkles } from "lucide-react";
 
 export function HeroSection({ t }) {
   return (
-    <section className="relative pt-16 pb-12 md:pt-20 md:pb-16 lg:min-h-[calc(100vh-80px)] lg:flex lg:items-center overflow-hidden">
+    <section className="relative pt-8 pb-8 md:pt-12 md:pb-10 lg:h-[calc(100vh-80px)] lg:flex lg:items-center overflow-hidden">
       {/* Warm gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#FAF9F7] via-[#F5F1E8] to-[#EAE4D5]"></div>
 
@@ -21,10 +21,10 @@ export function HeroSection({ t }) {
       <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-gradient-radial from-[#3FA9A6]/15 via-[#3FA9A6]/5 to-transparent rounded-full blur-3xl"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left: Content */}
           <div className="text-center lg:text-left">
-            <h1 className="font-poppins text-4xl md:text-5xl lg:text-6xl font-semibold text-blue-900 leading-[1.1] mb-6 tracking-tight">
+            <h1 className="font-poppins text-5xl md:text-6xl lg:text-[3.5rem] xl:text-6xl font-semibold text-blue-900 leading-[1.1] mb-4 tracking-tight">
               {t({
                 en: (
                   <>
@@ -42,7 +42,7 @@ export function HeroSection({ t }) {
                 ),
               })}
             </h1>
-            <p className="text-xl md:text-2xl text-blue-900/70 mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0">
+            <p className="text-lg md:text-xl text-blue-900/70 mb-6 leading-relaxed max-w-xl mx-auto lg:mx-0">
               {t({
                 en: "Personalized English classes with a native US teacher. Speak naturally, step by step.",
                 es: "Clases personalizadas de inglés con un profesor nativo de EE.UU. Habla naturalmente, paso a paso.",
@@ -50,10 +50,10 @@ export function HeroSection({ t }) {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 mb-6">
               <a
                 href="/account/signup"
-                className="group inline-flex items-center justify-center px-10 py-5 bg-gradient-to-r from-[#F2B705] to-[#f5c642] text-[#1F2A44] rounded-xl font-semibold text-lg hover:shadow-xl hover:brightness-105 hover:scale-105 transition-all w-full sm:w-auto shadow-md"
+                className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#F2B705] to-[#f5c642] text-[#1F2A44] rounded-xl font-semibold text-base hover:shadow-xl hover:brightness-105 hover:scale-105 transition-all w-full sm:w-auto shadow-md"
               >
                 {t({ en: "Start free", es: "Comenzar gratis" })}
                 <ArrowRight
@@ -63,7 +63,7 @@ export function HeroSection({ t }) {
               </a>
               <a
                 href="/book"
-                className="group inline-flex items-center justify-center px-10 py-5 bg-white/80 backdrop-blur-sm border-2 border-[#1F2A44] text-[#1F2A44] rounded-xl font-semibold text-lg hover:bg-white hover:shadow-lg hover:scale-105 transition-all w-full sm:w-auto shadow-sm"
+                className="group inline-flex items-center justify-center px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-[#1F2A44] text-[#1F2A44] rounded-xl font-semibold text-base hover:bg-white hover:shadow-lg hover:scale-105 transition-all w-full sm:w-auto shadow-sm"
               >
                 <Calendar
                   className="mr-2 group-hover:scale-110 transition-transform"
@@ -77,7 +77,7 @@ export function HeroSection({ t }) {
             </div>
 
             {/* Trust Badges */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto lg:mx-0">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto lg:mx-0">
               <div className="flex items-center justify-center lg:justify-start gap-3 bg-white/60 backdrop-blur-sm px-4 py-3 rounded-xl border border-gray-200/50 shadow-sm hover:shadow-md hover:scale-105 transition-all">
                 <div className="w-10 h-10 bg-gradient-to-br from-[#3FA9A6] to-[#2d8784] rounded-xl flex items-center justify-center flex-shrink-0">
                   <Award size={20} className="text-white" />
@@ -123,12 +123,12 @@ export function HeroSection({ t }) {
           </div>
 
           {/* Right: Illustration */}
-          <div className="relative hidden lg:block">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105">
+          <div className="relative hidden lg:flex items-center">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 max-h-[calc(100vh-140px)]">
               <img
                 src="https://raw.createusercontent.com/5845d23a-94ad-4788-9852-81818a3ada6c/"
                 alt="Person studying English in a cozy home library"
-                className="aspect-[4/5] w-full max-h-[calc(100vh-160px)] object-cover"
+                className="w-full max-h-[calc(100vh-140px)] object-cover"
               />
             </div>
 
