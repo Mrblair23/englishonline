@@ -47,22 +47,29 @@ export default function DashboardPage() {
 
   // Banner logic for subscription status
   let banner = null;
-  if (user.subscription_status === "inactive") {
+  if (user.subscription_status === "inactive" || !user.subscription_status) {
     banner = (
-      <div className="w-full bg-yellow-100 text-yellow-800 px-4 py-3 rounded mb-4 text-center font-medium">
-        Choose a plan to get started.
-      </div>
+      <a
+        href="/choose-plan"
+        className="block w-full bg-gradient-to-r from-[#F2B705]/20 to-[#f5c642]/20 border border-[#F2B705]/40 text-[#1F2A44] px-4 py-4 rounded-xl mb-4 text-center font-semibold hover:shadow-md transition-all group cursor-pointer"
+      >
+        <span className="flex items-center justify-center gap-2">
+          <span>🎯</span>
+          <span>Choose a plan to get started</span>
+          <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+        </span>
+      </a>
     );
   } else if (user.subscription_status === "pending_manual_activation") {
     banner = (
-      <div className="w-full bg-blue-100 text-blue-800 px-4 py-3 rounded mb-4 text-center font-medium">
-        Payment received. Awaiting confirmation.
+      <div className="w-full bg-blue-100 text-blue-800 px-4 py-3 rounded-xl mb-4 text-center font-medium">
+        ⏳ Payment received. Awaiting confirmation.
       </div>
     );
   } else if (user.subscription_status === "suspended") {
     banner = (
-      <div className="w-full bg-red-100 text-red-800 px-4 py-3 rounded mb-4 text-center font-medium">
-        Your subscription is suspended. Please contact support.
+      <div className="w-full bg-red-100 text-red-800 px-4 py-3 rounded-xl mb-4 text-center font-medium">
+        ⚠️ Your subscription is suspended. Please contact support.
       </div>
     );
   }

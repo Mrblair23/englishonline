@@ -199,7 +199,7 @@ export default function PricingPage() {
 
                       {/* CTA Button */}
                       <a
-                        href="/account/signup"
+                        href={currentUser ? "/choose-plan" : "/account/signup"}
                         className={`block w-full text-center py-3 rounded-xl font-semibold transition-all ${
                           tier.is_popular
                             ? "bg-gradient-to-r from-[#3FA9A6] to-[#35918e] text-white shadow-md hover:shadow-xl hover:scale-105"
