@@ -2,7 +2,7 @@ import { ArrowRight, Calendar, Award, Sparkles } from "lucide-react";
 
 export function HeroSection({ t }) {
   return (
-    <section className="relative pt-20 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+    <section className="relative pt-16 pb-12 md:pt-20 md:pb-16 lg:min-h-[calc(100vh-80px)] lg:flex lg:items-center overflow-hidden">
       {/* Warm gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#FAF9F7] via-[#F5F1E8] to-[#EAE4D5]"></div>
 
@@ -24,7 +24,7 @@ export function HeroSection({ t }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left: Content */}
           <div className="text-center lg:text-left">
-            <h1 className="font-poppins text-5xl md:text-6xl lg:text-7xl font-semibold text-blue-900 leading-[1.1] mb-6 tracking-tight">
+            <h1 className="font-poppins text-4xl md:text-5xl lg:text-6xl font-semibold text-blue-900 leading-[1.1] mb-6 tracking-tight">
               {t({
                 en: (
                   <>
@@ -128,7 +128,7 @@ export function HeroSection({ t }) {
               <img
                 src="https://raw.createusercontent.com/5845d23a-94ad-4788-9852-81818a3ada6c/"
                 alt="Person studying English in a cozy home library"
-                className="aspect-[3/4] w-full h-full object-cover"
+                className="aspect-[4/5] w-full max-h-[calc(100vh-160px)] object-cover"
               />
             </div>
 
