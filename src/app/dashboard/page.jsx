@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Menu } from "lucide-react";
 import { useDashboardState } from "@/hooks/useDashboardState";
+import { useLanguage } from "@/utils/useLanguage";
 import { DashboardSidebar } from "@/components/Dashboard/DashboardSidebar";
 import { MobileSidebar } from "@/components/Dashboard/MobileSidebar";
 import { DashboardBackground } from "@/components/Dashboard/DashboardBackground";
@@ -24,6 +25,8 @@ export default function DashboardPage() {
     completedCount,
     hasUpcomingClass,
   } = useDashboardState();
+  const { language } = useLanguage();
+  const t = (translations) => translations[language] || translations.en;
 
   // Redirect admins to admin dashboard
   if (!loading && user?.role === "admin") {
@@ -55,7 +58,7 @@ export default function DashboardPage() {
       >
         <span className="flex items-center justify-center gap-2">
           <span>🎯</span>
-          <span>Choose a plan to get started</span>
+          <span>{t({ en: "Choose a plan to get started", es: "Elige un plan para comenzar" })}</span>
           <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
         </span>
       </a>
@@ -63,13 +66,13 @@ export default function DashboardPage() {
   } else if (user.subscription_status === "pending_manual_activation") {
     banner = (
       <div className="w-full bg-blue-100 text-blue-800 px-4 py-3 rounded-xl mb-4 text-center font-medium">
-        ⏳ Payment received. Awaiting confirmation.
+        ⏳ {t({ en: "Payment received. Awaiting confirmation.", es: "Pago recibido. Esperando confirmación." })}
       </div>
     );
   } else if (user.subscription_status === "suspended") {
     banner = (
       <div className="w-full bg-red-100 text-red-800 px-4 py-3 rounded-xl mb-4 text-center font-medium">
-        ⚠️ Your subscription is suspended. Please contact support.
+        ⚠️ {t({ en: "Your subscription is suspended. Please contact support.", es: "Tu suscripción está suspendida. Por favor contacta soporte." })}
       </div>
     );
   }
@@ -99,7 +102,7 @@ export default function DashboardPage() {
               className="lg:hidden mb-6 flex items-center space-x-2 min-h-[44px] px-4 py-3 text-gray-600 font-medium hover:text-[#3FA9A6] hover:bg-white rounded-xl transition-all"
             >
               <Menu size={24} />
-              <span className="text-base">Menu</span>
+              <span className="text-base">{t({ en: "Menu", es: "Menú" })}</span>
             </button>
 
             {activeTab === "overview" && (

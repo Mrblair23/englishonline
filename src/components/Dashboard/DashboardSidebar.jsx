@@ -8,21 +8,22 @@ import {
 import { useLanguage } from "@/utils/useLanguage";
 
 const navigationItems = [
-  { id: "overview", label: "Overview", icon: <LayoutDashboard size={20} /> },
-  { id: "book", label: "Book a class", icon: <Calendar size={20} /> },
-  { id: "schedule", label: "Schedule", icon: <Clock size={20} /> },
-  { id: "payments", label: "Payments", icon: <CreditCard size={20} /> },
-  { id: "settings", label: "Settings", icon: <Settings size={20} /> },
+  { id: "overview", en: "Overview", es: "Resumen", icon: <LayoutDashboard size={20} /> },
+  { id: "book", en: "Book a class", es: "Reservar clase", icon: <Calendar size={20} /> },
+  { id: "schedule", en: "Schedule", es: "Horario", icon: <Clock size={20} /> },
+  { id: "payments", en: "Payments", es: "Pagos", icon: <CreditCard size={20} /> },
+  { id: "settings", en: "Settings", es: "Ajustes", icon: <Settings size={20} /> },
 ];
 
 export function DashboardSidebar({ activeTab, setActiveTab }) {
   const { language, setLanguage } = useLanguage();
+  const t = (translations) => translations[language] || translations.en;
 
   return (
     <aside className="hidden lg:block w-64 bg-white/60 backdrop-blur-sm border-r border-gray-200/50 min-h-[calc(100vh-5rem)] sticky top-20">
       <div className="p-6">
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
-          Student portal
+          {t({ en: "Student portal", es: "Portal del estudiante" })}
         </h3>
         <nav className="space-y-2">
           {navigationItems.map((item) => (
@@ -44,14 +45,14 @@ export function DashboardSidebar({ activeTab, setActiveTab }) {
               >
                 {item.icon}
               </span>
-              <span>{item.label}</span>
+              <span>{language === "es" ? item.es : item.en}</span>
             </button>
           ))}
         </nav>
 
         <div className="mt-8">
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Language
+            {t({ en: "Language", es: "Idioma" })}
           </h4>
           <div className="flex items-center space-x-2 bg-white rounded-xl border border-gray-200 p-1 shadow-sm">
             <button

@@ -5,16 +5,20 @@ import {
   MessageCircle,
   ChevronRight,
 } from "lucide-react";
+import { useLanguage } from "@/utils/useLanguage";
 
 export function QuickActions({
   onBookClass,
   onViewSchedule,
   onChangePayments,
 }) {
+  const { language } = useLanguage();
+  const t = (translations) => translations[language] || translations.en;
+
   return (
     <div className="bg-gradient-to-br from-white to-[#FAF9F7] rounded-2xl p-6 sm:p-8 border border-gray-200/50 shadow-sm hover:shadow-lg transition-all duration-300">
       <h3 className="font-poppins text-lg sm:text-xl font-semibold text-[#1F2A44] mb-4 sm:mb-6 leading-tight">
-        Quick actions
+        {t({ en: "Quick actions", es: "Acciones rápidas" })}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <button
@@ -26,7 +30,7 @@ export function QuickActions({
               <Calendar className="text-[#1F2A44]" size={20} />
             </div>
             <span className="font-medium text-[#1F2A44] text-sm sm:text-base">
-              Book a class
+              {t({ en: "Book a class", es: "Reservar clase" })}
             </span>
           </div>
           <ChevronRight
@@ -43,7 +47,7 @@ export function QuickActions({
             <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center group-hover/action:scale-110 group-hover/action:rotate-6 transition-all">
               <Clock className="text-white" size={20} />
             </div>
-            <span className="font-medium text-[#1F2A44]">View schedule</span>
+            <span className="font-medium text-[#1F2A44]">{t({ en: "View schedule", es: "Ver horario" })}</span>
           </div>
           <ChevronRight
             className="text-gray-400 group-hover/action:text-purple-600 group-hover/action:translate-x-1 transition-all"
@@ -59,7 +63,7 @@ export function QuickActions({
             <div className="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center group-hover/action:scale-110 group-hover/action:rotate-6 transition-all">
               <CreditCard className="text-white" size={20} />
             </div>
-            <span className="font-medium text-[#1F2A44]">Change plan</span>
+            <span className="font-medium text-[#1F2A44]">{t({ en: "Change plan", es: "Cambiar plan" })}</span>
           </div>
           <ChevronRight
             className="text-gray-400 group-hover/action:text-amber-600 group-hover/action:translate-x-1 transition-all"
@@ -75,7 +79,7 @@ export function QuickActions({
             <div className="w-10 h-10 bg-[#3FA9A6] rounded-xl flex items-center justify-center group-hover/action:scale-110 group-hover/action:rotate-6 transition-all">
               <MessageCircle className="text-white" size={20} />
             </div>
-            <span className="font-medium text-[#1F2A44]">Contact us</span>
+            <span className="font-medium text-[#1F2A44]">{t({ en: "Contact us", es: "Contáctanos" })}</span>
           </div>
           <ChevronRight
             className="text-gray-400 group-hover/action:text-[#3FA9A6] group-hover/action:translate-x-1 transition-all"

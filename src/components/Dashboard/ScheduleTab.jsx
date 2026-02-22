@@ -1,6 +1,9 @@
 import { ArrowRight } from "lucide-react";
+import { useLanguage } from "@/utils/useLanguage";
 
 export function ScheduleTab() {
+  const { language } = useLanguage();
+  const t = (translations) => translations[language] || translations.en;
   const classes = [
     {
       title: "Business English 101",
@@ -22,7 +25,7 @@ export function ScheduleTab() {
   return (
     <div className="bg-gradient-to-br from-white to-[#FAF9F7] rounded-2xl p-8 border border-gray-200/50 shadow-lg">
       <h2 className="font-poppins text-3xl font-semibold text-[#1F2A44] mb-6 leading-tight">
-        My schedule
+        {t({ en: "My schedule", es: "Mi horario" })}
       </h2>
       <div className="space-y-4">
         {classes.map((cls, i) => (
@@ -44,7 +47,7 @@ export function ScheduleTab() {
               </p>
             </div>
             <button className="group/btn bg-gradient-to-r from-[#F2B705] to-[#f5c642] text-[#1F2A44] px-6 py-2 rounded-xl font-medium hover:brightness-105 hover:scale-105 transition-all shadow-md flex items-center space-x-2">
-              <span>Join</span>
+              <span>{t({ en: "Join", es: "Unirse" })}</span>
               <ArrowRight
                 size={16}
                 className="group-hover/btn:translate-x-1 transition-transform"

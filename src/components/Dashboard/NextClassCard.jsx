@@ -1,6 +1,10 @@
 import { Video, Clock, Calendar, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/utils/useLanguage";
 
 export function NextClassCard({ hasUpcomingClass, onBookClass }) {
+  const { language } = useLanguage();
+  const t = (translations) => translations[language] || translations.en;
+
   return (
     <div className="group bg-gradient-to-br from-[#F2B705] to-[#f5c642] rounded-2xl p-8 text-[#1F2A44] shadow-lg relative overflow-hidden hover:shadow-2xl hover:scale-105 hover:-translate-y-1 transition-all duration-300">
       <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
@@ -11,10 +15,10 @@ export function NextClassCard({ hasUpcomingClass, onBookClass }) {
           </div>
           <div>
             <h3 className="font-poppins text-lg font-semibold leading-tight">
-              Next class
+              {t({ en: "Next class", es: "Próxima clase" })}
             </h3>
             <p className="text-[#1F2A44]/70 text-sm leading-relaxed">
-              Coming up soon
+              {t({ en: "Coming up soon", es: "Próximamente" })}
             </p>
           </div>
         </div>
@@ -34,7 +38,7 @@ export function NextClassCard({ hasUpcomingClass, onBookClass }) {
             </div>
             <button className="group/btn w-full bg-white text-[#1F2A44] py-3 rounded-xl font-semibold hover:bg-[#FAF9F7] hover:scale-105 transition-all flex items-center justify-center space-x-2 shadow-md">
               <Video size={18} />
-              <span>Join Zoom class</span>
+              <span>{t({ en: "Join Zoom class", es: "Unirse a la clase" })}</span>
               <ArrowRight
                 size={16}
                 className="group-hover/btn:translate-x-1 transition-transform"
@@ -47,14 +51,14 @@ export function NextClassCard({ hasUpcomingClass, onBookClass }) {
               <Calendar size={32} className="text-[#1F2A44]" />
             </div>
             <p className="text-[#1F2A44]/80 font-medium mb-4 leading-relaxed">
-              Your next class will appear here ✨
+              {t({ en: "Your next class will appear here ✨", es: "Tu próxima clase aparecerá aquí ✨" })}
             </p>
             <button
               onClick={onBookClass}
               className="group/btn inline-flex items-center space-x-2 bg-white text-[#1F2A44] px-6 py-3 rounded-xl font-semibold hover:bg-[#FAF9F7] hover:scale-105 transition-all shadow-md"
             >
               <Calendar size={18} />
-              <span>Book a class</span>
+              <span>{t({ en: "Book a class", es: "Reservar clase" })}</span>
               <ArrowRight
                 size={16}
                 className="group-hover/btn:translate-x-1 transition-transform"

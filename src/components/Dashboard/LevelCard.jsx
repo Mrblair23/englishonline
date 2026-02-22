@@ -1,6 +1,10 @@
 import { Award, TrendingUp, BookOpen } from "lucide-react";
+import { useLanguage } from "@/utils/useLanguage";
 
 export function LevelCard() {
+  const { language } = useLanguage();
+  const t = (translations) => translations[language] || translations.en;
+
   return (
     <div className="group bg-gradient-to-br from-white to-[#FAF9F7] rounded-2xl p-8 border border-gray-200/50 shadow-sm hover:shadow-xl hover:scale-105 hover:-translate-y-1 transition-all duration-300">
       <div className="flex items-center justify-between mb-6">
@@ -10,10 +14,10 @@ export function LevelCard() {
           </div>
           <div>
             <h3 className="font-poppins text-lg font-semibold text-[#1F2A44] leading-tight">
-              My level
+              {t({ en: "My level", es: "Mi nivel" })}
             </h3>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Current proficiency
+              {t({ en: "Current proficiency", es: "Nivel actual" })}
             </p>
           </div>
         </div>
@@ -21,15 +25,15 @@ export function LevelCard() {
       <div className="mb-6">
         <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#3FA9A6] to-[#2d8a87] text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg">
           <TrendingUp size={20} />
-          <span>Intermediate</span>
+          <span>{t({ en: "Intermediate", es: "Intermedio" })}</span>
         </div>
         <p className="text-sm text-gray-600 mt-4 leading-relaxed">
-          You're making great progress! Keep up the excellent work.
+          {t({ en: "You're making great progress! Keep up the excellent work.", es: "¡Estás progresando muy bien! Sigue con el excelente trabajo." })}
         </p>
       </div>
       <button className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 hover:scale-105">
         <BookOpen size={18} />
-        <span>Take placement quiz</span>
+        <span>{t({ en: "Take placement quiz", es: "Hacer prueba de nivel" })}</span>
       </button>
     </div>
   );

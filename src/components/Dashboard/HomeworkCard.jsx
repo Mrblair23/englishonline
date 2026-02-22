@@ -1,6 +1,10 @@
 import { BookOpen, CheckCircle2, Circle, Sparkles } from "lucide-react";
+import { useLanguage } from "@/utils/useLanguage";
 
 export function HomeworkCard({ homework, onToggleHomework, completedCount }) {
+  const { language } = useLanguage();
+  const t = (translations) => translations[language] || translations.en;
+
   return (
     <div className="group bg-gradient-to-br from-white to-[#FAF9F7] rounded-2xl p-8 border border-gray-200/50 shadow-sm hover:shadow-xl hover:scale-105 hover:-translate-y-1 transition-all duration-300">
       <div className="flex items-center justify-between mb-6">
@@ -10,10 +14,10 @@ export function HomeworkCard({ homework, onToggleHomework, completedCount }) {
           </div>
           <div>
             <h3 className="font-poppins text-lg font-semibold text-[#1F2A44] leading-tight">
-              Homework this week
+              {t({ en: "Homework this week", es: "Tarea de la semana" })}
             </h3>
             <p className="text-sm text-gray-500 leading-relaxed">
-              {completedCount} of {homework.length} completed
+              {completedCount} {t({ en: "of", es: "de" })} {homework.length} {t({ en: "completed", es: "completadas" })}
             </p>
           </div>
         </div>
@@ -62,7 +66,7 @@ export function HomeworkCard({ homework, onToggleHomework, completedCount }) {
             <Sparkles size={32} className="text-green-600" />
           </div>
           <p className="text-gray-500 font-medium leading-relaxed">
-            No homework yet — enjoy your free time! 🎉
+            {t({ en: "No homework yet — enjoy your free time! 🎉", es: "Sin tarea aún — ¡disfruta tu tiempo libre! 🎉" })}
           </p>
         </div>
       )}

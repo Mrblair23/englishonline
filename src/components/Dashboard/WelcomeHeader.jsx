@@ -1,6 +1,10 @@
 import { Lightbulb } from "lucide-react";
+import { useLanguage } from "@/utils/useLanguage";
 
 export function WelcomeHeader({ userName }) {
+  const { language } = useLanguage();
+  const t = (translations) => translations[language] || translations.en;
+
   return (
     <div className="mb-6 sm:mb-8 bg-gradient-to-br from-[#1F2A44] to-[#2B3448] rounded-2xl p-6 sm:p-8 md:p-12 text-white relative overflow-hidden shadow-xl">
       {/* Warm glows */}
@@ -21,10 +25,10 @@ export function WelcomeHeader({ userName }) {
           <Lightbulb size={32} className="text-[#F2B705] hidden sm:block" />
         </div>
         <h1 className="font-poppins text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-2 sm:mb-3 leading-tight">
-          Hi, {userName?.split(" ")[0]}! 👋
+          {t({ en: "Hi", es: "Hola" })}, {userName?.split(" ")[0]}! 👋
         </h1>
         <p className="text-gray-300 font-medium text-base sm:text-lg leading-relaxed">
-          Welcome back to your learning journey
+          {t({ en: "Welcome back to your learning journey", es: "Bienvenido de vuelta a tu camino de aprendizaje" })}
         </p>
       </div>
     </div>
