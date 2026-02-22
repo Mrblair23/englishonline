@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { X, Zap, ArrowRight } from "lucide-react";
+import { AuthContext } from "@/context/AuthContext";
 
 export default function PromoBanner() {
   const [isVisible, setIsVisible] = useState(true);
+  const auth = useContext(AuthContext);
+  const user = auth?.loading || auth?.hydrating ? null : auth?.user;
 
   useEffect(() => {
     const dismissed = sessionStorage.getItem("promoBannerDismissed");
@@ -15,6 +18,9 @@ export default function PromoBanner() {
     setIsVisible(false);
     sessionStorage.setItem("promoBannerDismissed", "true");
   };
+
+  // Hide for logged-in users (student, admin, teacher)
+  if (user) return null;
 
   if (!isVisible) return null;
 

@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import PromoBanner from "@/components/PromoBanner";
 import { LanguageProvider } from "@/utils/useLanguage";
 import { CountryProvider } from "@/utils/useCountry";
 
@@ -20,7 +19,6 @@ export default function RootLayout({ children }) {
       <QueryClientProvider client={queryClient}>
         <LanguageProvider>
           <CountryProvider>
-            <PromoBanner />
             <div className="animate-fade-in">{children}</div>
           </CountryProvider>
         </LanguageProvider>
