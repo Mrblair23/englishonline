@@ -44,6 +44,11 @@ export default function AdminLayout({ children, currentPage }) {
       icon: <Users size={20} />,
     },
     {
+      name: "Bundles",
+      href: "/admin/bundles",
+      icon: <BookOpen size={20} />,
+    },
+    {
       name: "Pricing",
       href: "/admin/pricing",
       icon: <Tag size={20} />,
