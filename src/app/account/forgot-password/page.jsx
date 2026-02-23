@@ -27,11 +27,35 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    // Mock API call - simulate sending reset link
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const API_BASE = import.meta.env.PROD
+        ? "/api"
+        : "http://localhost:4000";
+
+      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 429) {
+        setError("Too many requests. Please wait a few minutes and try again.");
+        return;
+      }
+
+      if (!res.ok) {
+        setError(data?.error || "Something went wrong. Please try again.");
+        return;
+      }
+
       setSuccess(true);
-    }, 1500);
+    } catch (err) {
+      setError("Unable to connect. Please check your internet and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (success) {
@@ -56,7 +80,7 @@ export default function ForgotPasswordPage() {
               <strong className="text-gray-900">Didn't receive it?</strong>
               <br />• Check your spam/junk folder
               <br />• Make sure you entered the correct email
-              <br />• Link expires in 1 hour
+              <br />• Link expires in 24 hours
             </p>
           </div>
 
@@ -64,11 +88,13 @@ export default function ForgotPasswordPage() {
             <button
               onClick={() => {
                 setSuccess(false);
-                setEmail("");
+                setLoading(false);
+                setError(null);
               }}
-              className="w-full bg-[#1e3a8a] text-white py-4 rounded-2xl font-bold text-lg hover:brightness-110 active:scale-[0.98] transition-all"
+              disabled={loading}
+              className="w-full bg-[#1e3a8a] text-white py-4 rounded-2xl font-bold text-lg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
             >
-              Try Another Email
+              {loading ? "Sending..." : "Resend Reset Link"}
             </button>
 
             <a

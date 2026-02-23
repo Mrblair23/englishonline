@@ -53,7 +53,10 @@ export default function SetPasswordPage() {
       }
 
       if (payload?.token) {
-        window.localStorage.setItem("auth_token", payload.token);
+        window.localStorage.setItem("eo_auth", JSON.stringify({
+          token: payload.token,
+          user: payload.user || null,
+        }));
       }
 
       setSuccess(true);
