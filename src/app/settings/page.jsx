@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import useUser from "@/utils/useUser";
 import { useLanguage } from "@/utils/useLanguage";
 import { apiFetch } from "@/utils/apiClient";
+import StudentAvatarSection from "@/components/StudentAvatarSection";
 import {
   User,
   Bell,
@@ -150,23 +151,11 @@ export default function SettingsPage() {
 
             {/* Content */}
             <div className="flex-1 space-y-8">
+              {/* Avatar Section */}
+              <StudentAvatarSection user={user} onAvatarChanged={refetch} />
+
               <div className="bm-card bm-card-elevated bm-card-pad-lg">
-                <div className="flex items-center space-x-8 mb-12 pb-12 border-b border-gray-50">
-                  <div className="relative group cursor-pointer">
-                    <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center text-[#1e3a8a] text-3xl font-bold border-4 border-white shadow-lg overflow-hidden">
-                      {user.imageUrl ? (
-                        <img
-                          src={user.imageUrl}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        (user.displayName || user.name)?.[0]?.toUpperCase()
-                      )}
-                    </div>
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                      <Camera className="text-white" />
-                    </div>
-                  </div>
+                <div className="flex items-center space-x-6 mb-12 pb-12 border-b border-gray-50">
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold text-gray-900">
                       {user.displayName || user.name}

@@ -186,9 +186,9 @@ export default function Header() {
                 </Link>
                 <div className="relative group">
                   <button type="button" className="flex items-center space-x-2 text-[#1F2A44] font-medium text-sm">
-                    {currentUser?.imageUrl ? (
+                    {(currentUser?.profileAvatarUrl || currentUser?.imageUrl) ? (
                       <img
-                        src={currentUser.imageUrl}
+                        src={currentUser.profileAvatarUrl || currentUser.imageUrl}
                         alt=""
                         className="w-7 h-7 rounded-full object-cover border-2 border-[#3FA9A6]/30"
                       />
