@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import useUser from "@/utils/useUser";
 import { useLanguage } from "@/utils/useLanguage";
+import { apiFetch } from "@/utils/apiClient";
 import {
   User,
   Bell,
@@ -14,21 +15,51 @@ import {
 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { data: user, loading } = useUser();
+  const { data: user, loading, refetch } = useUser();
   const { language } = useLanguage();
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [bio, setBio] = useState("");
 
   const t = (translations) => translations[language] || translations.en;
+
+  // Sync form state when user data loads
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName || user.name || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1000));
-    setIsSaving(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 5000);
+    setErrorMsg(null);
+    try {
+      const res = await apiFetch("/users/me/profile", {
+        method: "PATCH",
+        body: JSON.stringify({
+          display_name: displayName.trim(),
+          name: displayName.trim(),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to save");
+      }
+      // Refetch user data so Header, Dashboard, etc. update immediately
+      await refetch();
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 5000);
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (loading) return null;
@@ -123,13 +154,13 @@ export default function SettingsPage() {
                 <div className="flex items-center space-x-8 mb-12 pb-12 border-b border-gray-50">
                   <div className="relative group cursor-pointer">
                     <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center text-[#1e3a8a] text-3xl font-bold border-4 border-white shadow-lg overflow-hidden">
-                      {user.image ? (
+                      {user.imageUrl ? (
                         <img
-                          src={user.image}
+                          src={user.imageUrl}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        user.name?.[0]
+                        (user.displayName || user.name)?.[0]?.toUpperCase()
                       )}
                     </div>
                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
@@ -138,7 +169,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold text-gray-900">
-                      {user.name}
+                      {user.displayName || user.name}
                     </h2>
                     <p className="text-gray-500">{user.email}</p>
                     {/* Show user role */}
@@ -161,6 +192,11 @@ export default function SettingsPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {errorMsg && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+                      {errorMsg}
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -168,7 +204,8 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="text"
-                        defaultValue={user.name}
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
                         className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#1e3a8a] outline-none transition-all"
                       />
                     </div>
@@ -178,8 +215,9 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="email"
-                        defaultValue={user.email}
-                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#1e3a8a] outline-none transition-all"
+                        value={email}
+                        readOnly
+                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none transition-all cursor-not-allowed opacity-70"
                       />
                     </div>
                   </div>

@@ -184,7 +184,17 @@ export default function Header() {
                 </a>
                 <div className="relative group">
                   <button className="flex items-center space-x-2 text-[#1F2A44] font-medium text-sm">
-                    <User size={18} />
+                    {currentUser?.imageUrl ? (
+                      <img
+                        src={currentUser.imageUrl}
+                        alt=""
+                        className="w-7 h-7 rounded-full object-cover border-2 border-[#3FA9A6]/30"
+                      />
+                    ) : (
+                      <span className="w-7 h-7 rounded-full bg-gradient-to-br from-[#1F2A44] to-[#2B3448] flex items-center justify-center text-white text-xs font-bold">
+                        {(currentUser?.displayName || currentUser?.name)?.[0]?.toUpperCase() || <User size={14} />}
+                      </span>
+                    )}
                     <span>{t({ en: "My account", es: "Mi cuenta" })}</span>
                     <ChevronDown
                       size={14}

@@ -107,7 +107,7 @@ export default function DashboardPage() {
 
             {activeTab === "overview" && (
               <OverviewTab
-                userName={user.name}
+                userName={user.displayName || user.name}
                 hasUpcomingClass={hasUpcomingClass}
                 homework={homework}
                 onToggleHomework={toggleHomework}
