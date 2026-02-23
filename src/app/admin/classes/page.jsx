@@ -119,7 +119,6 @@ export default function AdminClassesPage() {
   const [filterTeacherId, setFilterTeacherId] = useState("");
   const [openControl, setOpenControl] = useState(null);
 
-  const [showCreateType, setShowCreateType] = useState(false);
   const [showCreateClass, setShowCreateClass] = useState(false);
 
   const [showEditSession, setShowEditSession] = useState(false);
@@ -161,7 +160,7 @@ export default function AdminClassesPage() {
 
       if (!typesRes.ok) {
         const payload = await typesRes.json().catch(() => ({}));
-        throw new Error(normalizeApiError(payload) || "Failed to load class types");
+        throw new Error(normalizeApiError(payload) || "Failed to load bundles");
       }
       if (!sessionsRes.ok) {
         const payload = await sessionsRes.json().catch(() => ({}));
@@ -173,7 +172,7 @@ export default function AdminClassesPage() {
       }
 
       const typesPayload = await typesRes.json();
-      setClassTypes(Array.isArray(typesPayload) ? typesPayload : []);
+      setClassTypes(Array.isArray(typesPayload?.bundles) ? typesPayload.bundles : Array.isArray(typesPayload) ? typesPayload : []);
 
       const sessionsPayload = await sessionsRes.json();
       setSessions(Array.isArray(sessionsPayload) ? sessionsPayload : []);
@@ -268,8 +267,8 @@ export default function AdminClassesPage() {
   }, [classTypes]);
 
   const selectedClassTypeLabel = useMemo(() => {
-    if (!filterClassTypeId) return "All class types";
-    return classTypeById.get(String(filterClassTypeId))?.name || "All class types";
+    if (!filterClassTypeId) return "All bundles";
+    return classTypeById.get(String(filterClassTypeId))?.name || "All bundles";
   }, [classTypeById, filterClassTypeId]);
 
   const selectedTeacherLabel = useMemo(() => {
@@ -327,37 +326,6 @@ export default function AdminClassesPage() {
     }
   }, [showCreateClass, createSessionForm.class_type_id, createSessionForm.max_students, classTypeById]);
 
-  async function handleCreateClassType(formData) {
-    const name = formData.get("name")?.toString().trim();
-    const mode = formData.get("mode")?.toString().trim();
-    const durationMinutes = Number(formData.get("duration_minutes"));
-    const maxStudents = Number(formData.get("max_students"));
-
-    if (!name) throw new Error("Class type name is required");
-    if (!mode) throw new Error("Mode is required");
-    if (!Number.isFinite(durationMinutes)) throw new Error("Duration (minutes) is required");
-    if (!Number.isFinite(maxStudents)) throw new Error("Max students is required");
-
-    const response = await apiFetch("/api/class-types", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        mode,
-        duration_minutes: durationMinutes,
-        max_students: maxStudents,
-      }),
-    });
-
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(normalizeApiError(payload) || "Failed to create class type");
-    }
-
-    setShowCreateType(false);
-    await loadData();
-  }
-
   async function handleCreateClassSession(formData) {
     const teacherId = formData.get("teacher_id")?.toString();
     const classTypeId = formData.get("class_type_id")?.toString();
@@ -366,7 +334,7 @@ export default function AdminClassesPage() {
     const meetLink = formData.get("meet_link")?.toString().trim();
 
     if (!teacherId) throw new Error("Teacher is required");
-    if (!classTypeId) throw new Error("Class type is required");
+    if (!classTypeId) throw new Error("Bundle is required");
     if (!startTime) throw new Error("Start time is required");
     if (!Number.isFinite(maxStudents)) throw new Error("Capacity is required");
 
@@ -374,7 +342,7 @@ export default function AdminClassesPage() {
     const durationMinutes = Number(selected?.duration_minutes);
     const start = parseDateTimeLocal(startTime);
     if (!selected || !Number.isFinite(durationMinutes) || !start) {
-      throw new Error("Unable to calculate end time from the selected class type");
+      throw new Error("Unable to calculate end time from the selected bundle");
     }
     const end = new Date(start.getTime() + durationMinutes * 60_000);
     const endTime = formatDateTimeLocal(end);
@@ -428,7 +396,7 @@ export default function AdminClassesPage() {
       const meetLink = editSessionForm.meet_link?.toString().trim();
 
       if (!teacherId) throw new Error("Teacher is required");
-      if (!classTypeId) throw new Error("Class type is required");
+      if (!classTypeId) throw new Error("Bundle is required");
       if (!startTime) throw new Error("Start time is required");
       if (!Number.isFinite(maxStudents)) throw new Error("Capacity is required");
 
@@ -436,7 +404,7 @@ export default function AdminClassesPage() {
       const durationMinutes = Number(selectedType?.duration_minutes);
       const start = parseDateTimeLocal(startTime);
       if (!selectedType || !Number.isFinite(durationMinutes) || !start) {
-        throw new Error("Unable to calculate end time from the selected class type");
+        throw new Error("Unable to calculate end time from the selected bundle");
       }
       const end = new Date(start.getTime() + durationMinutes * 60_000);
       const endTime = formatDateTimeLocal(end);
@@ -525,7 +493,7 @@ export default function AdminClassesPage() {
               }
               className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left text-gray-900 hover:bg-gray-50 sm:min-w-[240px]"
             >
-              <div className="text-[10px] font-semibold text-gray-500">Class types</div>
+              <div className="text-[10px] font-semibold text-gray-500">Bundle</div>
               <div className="text-sm font-medium truncate">{selectedClassTypeLabel}</div>
             </button>
 
@@ -562,7 +530,7 @@ export default function AdminClassesPage() {
               <div className="bm-card p-4">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr,auto] sm:items-end">
                   <label className="text-sm font-semibold text-gray-900">
-                    Filter by class type
+                    Filter by bundle
                     <select
                       value={filterClassTypeId}
                       onChange={(e) => {
@@ -571,7 +539,7 @@ export default function AdminClassesPage() {
                       }}
                       className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900"
                     >
-                      <option value="">All class types</option>
+                      <option value="">All bundles</option>
                       {activeClassTypes.map((ct) => (
                         <option key={ct.id} value={ct.id}>
                           {ct.name}
@@ -579,21 +547,11 @@ export default function AdminClassesPage() {
                       ))}
                     </select>
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpenControl(null);
-                      setShowCreateType(true);
-                    }}
-                    className="rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
-                  >
-                    Add class type
-                  </button>
                   <a
-                    href="/admin/settings"
+                    href="/admin/bundles"
                     className="rounded-2xl border border-gray-200 bg-white px-4 py-2 text-center text-sm font-semibold text-gray-900 hover:bg-gray-50"
                   >
-                    Edit class types
+                    Manage bundles
                   </a>
                 </div>
               </div>
@@ -756,7 +714,7 @@ export default function AdminClassesPage() {
                   ))}
                 </select>
               </Field>
-              <Field label="Class type">
+              <Field label="Bundle">
                 <select
                   name="class_type_id"
                   required
@@ -768,7 +726,7 @@ export default function AdminClassesPage() {
                   }
                 >
                   <option value="" disabled>
-                    Select a class type
+                    Select a bundle
                   </option>
                   {activeClassTypes.map((ct) => (
                     <option key={ct.id} value={ct.id}>
@@ -821,7 +779,7 @@ export default function AdminClassesPage() {
               {computedEditEndTime && (
                 <div className="text-xs text-gray-600">Ends at {computedEditEndTime.replace("T", " ")}</div>
               )}
-              <div className="text-xs text-gray-600">End time is calculated from the class type duration.</div>
+              <div className="text-xs text-gray-600">End time is calculated from the bundle duration.</div>
 
               <div className="pt-2 flex items-center justify-between gap-3">
                 <button
@@ -844,63 +802,7 @@ export default function AdminClassesPage() {
           </Modal>
         )}
 
-        {showCreateType && (
-          <Modal title="Create class type" onClose={() => setShowCreateType(false)}>
-            <Form
-              submitLabel="Create"
-              onSubmit={handleCreateClassType}
-              fields={(busy) => (
-                <>
-                  <Field label="Name">
-                    <input
-                      name="name"
-                      required
-                      disabled={busy}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                      placeholder="e.g., Group Conversation"
-                    />
-                  </Field>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Field label="Mode">
-                      <select
-                        name="mode"
-                        required
-                        disabled={busy}
-                        className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
-                        defaultValue="group"
-                      >
-                        <option value="group">Group</option>
-                        <option value="private">Private</option>
-                      </select>
-                    </Field>
-                    <Field label="Duration (minutes)">
-                      <input
-                        name="duration_minutes"
-                        type="number"
-                        min={1}
-                        required
-                        disabled={busy}
-                        className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                        placeholder="e.g., 60"
-                      />
-                    </Field>
-                    <Field label="Max students">
-                      <input
-                        name="max_students"
-                        type="number"
-                        min={1}
-                        required
-                        disabled={busy}
-                        className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                        placeholder="e.g., 8"
-                      />
-                    </Field>
-                  </div>
-                </>
-              )}
-            />
-          </Modal>
-        )}
+
 
         {showCreateClass && (
           <Modal title="Create class session" onClose={() => setShowCreateClass(false)}>
@@ -935,7 +837,7 @@ export default function AdminClassesPage() {
                       </div>
                     )}
                   </Field>
-                  <Field label="Class type">
+                  <Field label="Bundle">
                     <select
                       name="class_type_id"
                       required
@@ -947,7 +849,7 @@ export default function AdminClassesPage() {
                       }
                     >
                       <option value="" disabled>
-                        Select a class type
+                        Select a bundle
                       </option>
                       {activeClassTypes.map((ct) => (
                         <option key={ct.id} value={ct.id}>
@@ -957,7 +859,7 @@ export default function AdminClassesPage() {
                     </select>
                     {activeClassTypes.length === 0 && (
                       <div className="mt-1 text-xs text-gray-600">
-                        Create a class type first.
+                        Create a bundle first at <a href="/admin/bundles" className="underline text-amber-600">Manage Bundles</a>.
                       </div>
                     )}
                   </Field>
@@ -1009,7 +911,7 @@ export default function AdminClassesPage() {
                     </div>
                   )}
                   <div className="text-xs text-gray-600">
-                    End time is calculated from the class type duration.
+                    End time is calculated from the bundle duration.
                   </div>
                 </>
               )}
