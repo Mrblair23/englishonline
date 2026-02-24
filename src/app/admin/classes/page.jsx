@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import useAdmin from "@/utils/useAdmin";
 import AdminLayout from "@/components/AdminLayout";
 import { apiFetch } from "@/utils/apiClient";
+
+const MAX_WEEK_OFFSET = 3; // 0 = this week, up to 3 = 4 weeks total
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -115,6 +118,7 @@ export default function AdminClassesPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState(null);
 
+  const [weekOffset, setWeekOffset] = useState(0);
   const [filterClassTypeId, setFilterClassTypeId] = useState("");
   const [filterTeacherId, setFilterTeacherId] = useState("");
   const [openControl, setOpenControl] = useState(null);
@@ -194,7 +198,11 @@ export default function AdminClassesPage() {
     loadData();
   }, [loadData]);
 
-  const weekStart = useMemo(() => startOfWeek(new Date()), []);
+  const currentWeekStart = useMemo(() => startOfWeek(new Date()), []);
+  const weekStart = useMemo(
+    () => addDays(currentWeekStart, weekOffset * 7),
+    [currentWeekStart, weekOffset]
+  );
   const weekEnd = useMemo(() => {
     const end = addDays(weekStart, 7);
     end.setMilliseconds(-1);
@@ -205,6 +213,16 @@ export default function AdminClassesPage() {
     () => Array.from({ length: 7 }, (_, idx) => addDays(weekStart, idx)),
     [weekStart]
   );
+
+  const isCurrentWeek = weekOffset === 0;
+  const canGoPrev = weekOffset > 0;
+  const canGoNext = weekOffset < MAX_WEEK_OFFSET;
+
+  function weekLabel() {
+    if (weekOffset === 0) return "This week";
+    if (weekOffset === 1) return "Next week";
+    return `In ${weekOffset} weeks`;
+  }
 
   const sessionsByDay = useMemo(() => {
     const map = new Map();
@@ -592,8 +610,39 @@ export default function AdminClassesPage() {
 
         <section className="space-y-4">
           <div className="bm-card p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-900">This week</h2>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={!canGoPrev}
+                  onClick={() => setWeekOffset((o) => Math.max(0, o - 1))}
+                  className="rounded-xl border border-gray-200 bg-white p-2 text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  aria-label="Previous week"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <h2 className="text-lg font-semibold text-gray-900 min-w-[120px] text-center">
+                  {weekLabel()}
+                </h2>
+                <button
+                  type="button"
+                  disabled={!canGoNext}
+                  onClick={() => setWeekOffset((o) => Math.min(MAX_WEEK_OFFSET, o + 1))}
+                  className="rounded-xl border border-gray-200 bg-white p-2 text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  aria-label="Next week"
+                >
+                  <ChevronRight size={18} />
+                </button>
+                {!isCurrentWeek && (
+                  <button
+                    type="button"
+                    onClick={() => setWeekOffset(0)}
+                    className="ml-1 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all"
+                  >
+                    Today
+                  </button>
+                )}
+              </div>
               <span className="text-sm text-gray-500">
                 {formatDayLabel(weekStart)} – {formatDayLabel(addDays(weekStart, 6))}
               </span>
