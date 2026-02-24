@@ -24,6 +24,7 @@ export default function SettingsPage() {
 
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [bio, setBio] = useState("");
 
   const t = (translations) => translations[language] || translations.en;
@@ -33,6 +34,7 @@ export default function SettingsPage() {
     if (user) {
       setDisplayName(user.displayName || user.name || "");
       setEmail(user.email || "");
+      setPhoneNumber(user.phoneNumber || "");
     }
   }, [user]);
 
@@ -46,6 +48,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           display_name: displayName.trim(),
           name: displayName.trim(),
+          phone_number: phoneNumber.trim(),
         }),
       });
       if (!res.ok) {
@@ -209,6 +212,22 @@ export default function SettingsPage() {
                         className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none transition-all cursor-not-allowed opacity-70"
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      {t({ en: "Phone Number (WhatsApp)", es: "Número de teléfono (WhatsApp)" })}
+                    </label>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="+1 555 123 4567"
+                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#1e3a8a] outline-none transition-all"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      {t({ en: "Used for WhatsApp/text communication with teachers", es: "Usado para comunicación por WhatsApp/texto con profesores" })}
+                    </p>
                   </div>
 
                   <div>

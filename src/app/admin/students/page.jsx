@@ -6,6 +6,7 @@ import {
   Clock4,
   Layers3,
   Mail,
+  Phone,
   Search,
   ShieldCheck,
   UserPlus,
@@ -252,6 +253,11 @@ export default function AdminStudentsPage() {
                       <div>
                         <p className="font-semibold text-gray-900">{student.name || "Pending name"}</p>
                         <p className="text-xs text-gray-500">{student.email}</p>
+                        {student.phoneNumber && (
+                          <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                            <Phone size={10} /> {student.phoneNumber}
+                          </p>
+                        )}
                       </div>
                       <ChevronRight size={16} className="text-gray-400" />
                     </div>
@@ -325,6 +331,11 @@ export default function AdminStudentsPage() {
                     icon={<Mail size={16} />}
                     label="Email"
                     value={detail.student.email}
+                  />
+                  <MiniStat
+                    icon={<Phone size={16} />}
+                    label="Phone / WhatsApp"
+                    value={detail.student.phoneNumber || "Not provided"}
                   />
                   <MiniStat
                     icon={<Layers3 size={16} />}
@@ -460,12 +471,13 @@ function MiniStat({ icon, label, value }) {
 function CreateStudentModal({ onClose, onSubmit }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSubmitting(true);
-    await onSubmit({ name, email });
+    await onSubmit({ name, email, phone_number: phoneNumber });
     setSubmitting(false);
   };
 
@@ -503,6 +515,16 @@ function CreateStudentModal({ onClose, onSubmit }) {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="student@email.com"
+              className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 focus:border-amber-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-600">Phone (WhatsApp)</label>
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={(event) => setPhoneNumber(event.target.value)}
+              placeholder="+1 555 123 4567"
               className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 focus:border-amber-500 focus:outline-none"
             />
           </div>

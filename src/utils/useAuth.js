@@ -33,13 +33,13 @@ function useAuth() {
   );
 
   const signUpWithCredentials = useCallback(
-    async ({ email, password, name, callbackUrl, redirect = true }) => {
+    async ({ email, password, name, phone_number, callbackUrl, redirect = true }) => {
       const response = await apiFetch("/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ email, password, name, phone_number }),
         auth: false,
       });
 

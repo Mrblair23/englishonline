@@ -10,6 +10,7 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [showEmailSent, setShowEmailSent] = useState(false);
@@ -87,6 +88,7 @@ export default function SignUpPage() {
         email,
         password,
         name,
+        phone_number: phoneNumber,
         callbackUrl: "/dashboard",
         redirect: false, // Don't redirect immediately
       });
@@ -235,6 +237,20 @@ export default function SignUpPage() {
                 <span>⚠️</span> {fieldErrors.name}
               </p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Phone Number (WhatsApp)
+            </label>
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="+1 555 123 4567"
+              className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent outline-none transition-all"
+            />
+            <p className="text-xs text-gray-400 mt-1">Optional — used for WhatsApp/text communication</p>
           </div>
 
           <div>
