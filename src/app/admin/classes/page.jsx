@@ -363,8 +363,7 @@ export default function AdminClassesPage() {
       throw new Error("Unable to calculate end time from the selected bundle");
     }
     const end = new Date(start.getTime() + durationMinutes * 60_000);
-    const endTime = formatDateTimeLocal(end);
-    if (!endTime) throw new Error("Unable to calculate end time");
+    if (!end || Number.isNaN(end.getTime())) throw new Error("Unable to calculate end time");
 
     const response = await apiFetch("/api/class-sessions", {
       method: "POST",
@@ -372,8 +371,8 @@ export default function AdminClassesPage() {
       body: JSON.stringify({
         teacher_id: teacherId,
         class_type_id: classTypeId,
-        start_time: startTime,
-        end_time: endTime,
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
         max_students: maxStudents,
         meet_link: meetLink || undefined,
       }),
@@ -425,8 +424,7 @@ export default function AdminClassesPage() {
         throw new Error("Unable to calculate end time from the selected bundle");
       }
       const end = new Date(start.getTime() + durationMinutes * 60_000);
-      const endTime = formatDateTimeLocal(end);
-      if (!endTime) throw new Error("Unable to calculate end time");
+      if (!end || Number.isNaN(end.getTime())) throw new Error("Unable to calculate end time");
 
       const response = await apiFetch(`/admin/class-sessions/${sessionId}`, {
         method: "PATCH",
@@ -434,8 +432,8 @@ export default function AdminClassesPage() {
         body: JSON.stringify({
           teacher_id: teacherId,
           class_type_id: classTypeId,
-          start_time: startTime,
-          end_time: endTime,
+          start_time: start.toISOString(),
+          end_time: end.toISOString(),
           max_students: maxStudents,
           meet_link: meetLink || "",
         }),
