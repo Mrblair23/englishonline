@@ -1,9 +1,62 @@
-import { Video, Clock, Calendar, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Video, Clock, Calendar, ArrowRight, Loader2, User } from "lucide-react";
+import { apiFetch } from "@/utils/apiClient";
 import { useLanguage } from "@/utils/useLanguage";
 
-export function NextClassCard({ hasUpcomingClass, onBookClass }) {
+function formatRelative(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = d - now;
+  if (diffMs < 0) return null;
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 60) return `in ${diffMin} min`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `in ${diffHr}h`;
+  const diffDays = Math.floor(diffHr / 24);
+  return `in ${diffDays}d`;
+}
+
+function formatTimeShort(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (d.toDateString() === now.toDateString()) return `Today at ${time}`;
+  if (d.toDateString() === tomorrow.toDateString()) return `Tomorrow at ${time}`;
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) + ` at ${time}`;
+}
+
+export function NextClassCard({ onBookClass }) {
   const { language } = useLanguage();
-  const t = (translations) => translations[language] || translations.en;
+  const t = (tr) => tr[language] || tr.en;
+
+  const [nextClass, setNextClass] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await apiFetch("/api/bookings/my");
+        if (!res.ok) return;
+        const data = await res.json();
+        const upcoming = (data.bookings || [])
+          .filter(
+            (b) =>
+              b.booking_status === "confirmed" &&
+              new Date(b.start_time) > new Date()
+          )
+          .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+        if (upcoming.length > 0) setNextClass(upcoming[0]);
+      } catch (err) {
+        console.error("NextClassCard fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const relative = nextClass ? formatRelative(nextClass.start_time) : null;
 
   return (
     <div className="group bg-gradient-to-br from-[#F2B705] to-[#f5c642] rounded-2xl p-8 text-[#1F2A44] shadow-lg relative overflow-hidden hover:shadow-2xl hover:scale-105 hover:-translate-y-1 transition-all duration-300">
@@ -23,27 +76,49 @@ export function NextClassCard({ hasUpcomingClass, onBookClass }) {
           </div>
         </div>
 
-        {hasUpcomingClass ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="animate-spin text-[#1F2A44]/50" size={24} />
+          </div>
+        ) : nextClass ? (
           <>
             <div className="mb-6">
               <h4 className="font-poppins text-xl font-semibold mb-2 leading-tight">
-                Business English 101
+                {nextClass.class_type_name || t({ en: "Class Session", es: "Sesión de clase" })}
               </h4>
+              {nextClass.teacher_name && (
+                <div className="flex items-center gap-1.5 text-[#1F2A44]/70 mb-1">
+                  <User size={14} />
+                  <span className="text-sm">{nextClass.teacher_name}</span>
+                </div>
+              )}
               <div className="flex items-center space-x-2 text-[#1F2A44]/70">
                 <Clock size={16} />
                 <span className="text-sm leading-relaxed">
-                  Today at 4:00 PM (in 2 hours)
+                  {formatTimeShort(nextClass.start_time)}
+                  {relative && ` (${relative})`}
                 </span>
               </div>
             </div>
-            <button className="group/btn w-full bg-white text-[#1F2A44] py-3 rounded-xl font-semibold hover:bg-[#FAF9F7] hover:scale-105 transition-all flex items-center justify-center space-x-2 shadow-md">
-              <Video size={18} />
-              <span>{t({ en: "Join Zoom class", es: "Unirse a la clase" })}</span>
-              <ArrowRight
-                size={16}
-                className="group-hover/btn:translate-x-1 transition-transform"
-              />
-            </button>
+            {nextClass.meet_link ? (
+              <a
+                href={nextClass.meet_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group/btn w-full bg-white text-[#1F2A44] py-3 rounded-xl font-semibold hover:bg-[#FAF9F7] hover:scale-105 transition-all flex items-center justify-center space-x-2 shadow-md"
+              >
+                <Video size={18} />
+                <span>{t({ en: "Join class", es: "Unirse a la clase" })}</span>
+                <ArrowRight
+                  size={16}
+                  className="group-hover/btn:translate-x-1 transition-transform"
+                />
+              </a>
+            ) : (
+              <div className="w-full bg-white/50 text-[#1F2A44]/70 py-3 rounded-xl font-medium text-center text-sm">
+                {t({ en: "Meet link will appear before class", es: "El enlace de Meet aparecerá antes de la clase" })}
+              </div>
+            )}
           </>
         ) : (
           <div className="text-center py-4">

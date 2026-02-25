@@ -23,7 +23,6 @@ export default function DashboardPage() {
     homework,
     toggleHomework,
     completedCount,
-    hasUpcomingClass,
   } = useDashboardState();
   const { language } = useLanguage();
   const t = (translations) => translations[language] || translations.en;
@@ -108,7 +107,6 @@ export default function DashboardPage() {
             {activeTab === "overview" && (
               <OverviewTab
                 userName={user.displayName || user.name}
-                hasUpcomingClass={hasUpcomingClass}
                 homework={homework}
                 onToggleHomework={toggleHomework}
                 completedCount={completedCount}

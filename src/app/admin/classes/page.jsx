@@ -179,7 +179,7 @@ export default function AdminClassesPage() {
       setClassTypes(Array.isArray(typesPayload?.bundles) ? typesPayload.bundles : Array.isArray(typesPayload) ? typesPayload : []);
 
       const sessionsPayload = await sessionsRes.json();
-      setSessions(Array.isArray(sessionsPayload) ? sessionsPayload : []);
+      setSessions(Array.isArray(sessionsPayload?.sessions) ? sessionsPayload.sessions : Array.isArray(sessionsPayload) ? sessionsPayload : []);
 
       const teachersPayload = await teachersRes.json();
       setTeachers(Array.isArray(teachersPayload) ? teachersPayload : []);
