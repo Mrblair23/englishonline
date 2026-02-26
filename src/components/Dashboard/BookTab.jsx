@@ -9,6 +9,8 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
+  AlertCircle,
 } from "lucide-react";
 import { apiFetch } from "@/utils/apiClient";
 import { useLanguage } from "@/utils/useLanguage";
@@ -42,6 +44,12 @@ function isSameDay(a, b) {
   );
 }
 
+function formatPrice(cents) {
+  if (!cents || cents <= 0) return null;
+  const dollars = cents / 100;
+  return `$${dollars.toFixed(dollars % 1 === 0 ? 0 : 2)} USD`;
+}
+
 export function BookTab() {
   const { language } = useLanguage();
   const t = (tr) => tr[language] || tr.en;
@@ -51,6 +59,7 @@ export function BookTab() {
   const [error, setError] = useState(null);
   const [booking, setBooking] = useState(null); // session id being booked
   const [booked, setBooked] = useState(new Set()); // session ids already booked
+  const [bookError, setBookError] = useState(null); // error message with context
   const [view, setView] = useState("list"); // "list" | "calendar"
   const [calMonth, setCalMonth] = useState(() => {
     const now = new Date();
@@ -92,18 +101,28 @@ export function BookTab() {
 
   const handleBook = async (sessionId) => {
     setBooking(sessionId);
+    setBookError(null);
     try {
       const res = await apiFetch("/api/bookings", {
         method: "POST",
         body: JSON.stringify({ session_id: sessionId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Booking failed");
+      if (!res.ok) {
+        // If no active subscription, guide to pricing
+        if (res.status === 403 && /subscription/i.test(data.error)) {
+          setBookError({
+            type: "no-plan",
+            message: data.error,
+          });
+          return;
+        }
+        throw new Error(data.error || "Booking failed");
+      }
       setBooked((prev) => new Set([...prev, sessionId]));
-      // Refresh to update seats
       await fetchData();
     } catch (err) {
-      alert(err.message);
+      setBookError({ type: "error", message: err.message });
     } finally {
       setBooking(null);
     }
@@ -154,6 +173,8 @@ export function BookTab() {
     const isBooked = booked.has(session.id);
     const seatsLeft = parseInt(session.seats_left);
     const isFull = seatsLeft <= 0 && !isBooked;
+    const price = formatPrice(session.price_cents);
+    const mode = session.class_mode || session.session_type || "group";
 
     return (
       <div
@@ -170,6 +191,11 @@ export function BookTab() {
           <div className="flex items-center flex-wrap gap-2 mb-2">
             <span className="text-xs font-semibold text-[#3FA9A6] uppercase tracking-wider bg-[#3FA9A6]/10 px-3 py-1 rounded-xl">
               {session.class_type_name || "Class"}
+            </span>
+            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-lg capitalize">
+              {mode === "private" ? (language === "es" ? "Privada" : "Private")
+                : mode === "duo" ? "Duo"
+                : (language === "es" ? "Grupal" : "Group")}
             </span>
             {session.teacher_name && (
               <span className="flex items-center text-xs text-gray-500 gap-1">
@@ -197,6 +223,12 @@ export function BookTab() {
             {session.duration_minutes && (
               <span className="text-gray-400">
                 ({session.duration_minutes} min)
+              </span>
+            )}
+            {price && (
+              <span className="flex items-center gap-1 text-[#1F2A44] font-semibold">
+                <DollarSign size={14} />
+                {price}
               </span>
             )}
           </div>
@@ -289,6 +321,32 @@ export function BookTab() {
       {/* LIST VIEW */}
       {view === "list" && (
         <div className="mt-4">
+          {/* No-plan or error banner */}
+          {bookError && (
+            <div className={`mb-4 p-4 rounded-xl flex items-start gap-3 ${
+              bookError.type === "no-plan"
+                ? "bg-amber-50 border border-amber-200"
+                : "bg-red-50 border border-red-200"
+            }`}>
+              <AlertCircle size={20} className={bookError.type === "no-plan" ? "text-amber-500 mt-0.5 shrink-0" : "text-red-500 mt-0.5 shrink-0"} />
+              <div className="flex-1">
+                <p className={`font-medium ${bookError.type === "no-plan" ? "text-amber-800" : "text-red-800"}`}>
+                  {bookError.type === "no-plan"
+                    ? t({ en: "You need an active plan to book classes", es: "Necesitas un plan activo para reservar clases" })
+                    : bookError.message}
+                </p>
+                {bookError.type === "no-plan" && (
+                  <a
+                    href="/choose-plan"
+                    className="inline-flex items-center gap-1.5 mt-2 text-sm font-semibold text-amber-700 hover:text-amber-900 underline"
+                  >
+                    {t({ en: "Choose a plan →", es: "Elige un plan →" })}
+                  </a>
+                )}
+              </div>
+              <button onClick={() => setBookError(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+          )}
           {available.length === 0 ? (
             <div className="text-center py-16">
               <Calendar className="mx-auto text-gray-300 mb-4" size={48} />
@@ -316,6 +374,32 @@ export function BookTab() {
       {/* CALENDAR VIEW */}
       {view === "calendar" && (
         <div className="mt-4">
+          {/* No-plan or error banner */}
+          {bookError && (
+            <div className={`mb-4 p-4 rounded-xl flex items-start gap-3 ${
+              bookError.type === "no-plan"
+                ? "bg-amber-50 border border-amber-200"
+                : "bg-red-50 border border-red-200"
+            }`}>
+              <AlertCircle size={20} className={bookError.type === "no-plan" ? "text-amber-500 mt-0.5 shrink-0" : "text-red-500 mt-0.5 shrink-0"} />
+              <div className="flex-1">
+                <p className={`font-medium ${bookError.type === "no-plan" ? "text-amber-800" : "text-red-800"}`}>
+                  {bookError.type === "no-plan"
+                    ? t({ en: "You need an active plan to book classes", es: "Necesitas un plan activo para reservar clases" })
+                    : bookError.message}
+                </p>
+                {bookError.type === "no-plan" && (
+                  <a
+                    href="/choose-plan"
+                    className="inline-flex items-center gap-1.5 mt-2 text-sm font-semibold text-amber-700 hover:text-amber-900 underline"
+                  >
+                    {t({ en: "Choose a plan →", es: "Elige un plan →" })}
+                  </a>
+                )}
+              </div>
+              <button onClick={() => setBookError(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+          )}
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-4">
             <button
