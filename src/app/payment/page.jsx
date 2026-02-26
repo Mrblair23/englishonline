@@ -104,7 +104,8 @@ export default function PaymentPage() {
       formData.append("plan_name", planName || "");
       formData.append("amount", numericPrice.toString());
 
-      const token = localStorage.getItem("eo_auth");
+      const stored = localStorage.getItem("eo_auth");
+      const token = stored ? JSON.parse(stored)?.token : null;
 
       const baseUrl = import.meta.env.DEV ? "http://localhost:4000" : "";
       const response = await fetch(`${baseUrl}/api/payment-requests`, {
