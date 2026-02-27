@@ -140,9 +140,8 @@ export default function AdminClassesPage() {
   const [createSessionForm, setCreateSessionForm] = useState({
     teacher_id: "",
     class_type_id: "",
-    start_time: "",
     max_students: "",
-    meet_link: "",
+    schedule: [], // [{ day_of_week: "", start_time: "" }]
   });
 
   useEffect(() => {
@@ -300,11 +299,36 @@ export default function AdminClassesPage() {
     setCreateSessionForm({
       teacher_id: "",
       class_type_id: "",
-      start_time: "",
       max_students: "",
-      meet_link: "",
+      schedule: [],
     });
   }, [showCreateClass]);
+
+  // When the selected bundle changes, sync schedule slots & capacity
+  useEffect(() => {
+    if (!showCreateClass) return;
+    const selected = classTypeById.get(String(createSessionForm.class_type_id));
+    if (!selected) return;
+
+    const spw = Number(selected.sessions_per_week) || 1;
+
+    setCreateSessionForm((prev) => {
+      // Resize schedule array to match sessions_per_week
+      let schedule = [...prev.schedule];
+      while (schedule.length < spw) {
+        schedule.push({ day_of_week: "", start_time: "" });
+      }
+      if (schedule.length > spw) {
+        schedule = schedule.slice(0, spw);
+      }
+
+      // Auto-fill capacity from class type if not already set
+      const capacity =
+        prev.max_students || (typeof selected.max_students === "number" ? String(selected.max_students) : "");
+
+      return { ...prev, schedule, max_students: capacity };
+    });
+  }, [showCreateClass, createSessionForm.class_type_id, classTypeById]);
 
   useEffect(() => {
     if (!showEditSession || !selectedSession) return;
@@ -325,64 +349,59 @@ export default function AdminClassesPage() {
     });
   }, [showEditSession, selectedSession]);
 
-  const computedEndTime = useMemo(() => {
-    const selected = classTypeById.get(String(createSessionForm.class_type_id));
-    const durationMinutes = Number(selected?.duration_minutes);
-    const start = parseDateTimeLocal(createSessionForm.start_time);
-    if (!selected || !Number.isFinite(durationMinutes) || !start) return "";
-    const end = new Date(start.getTime() + durationMinutes * 60_000);
-    return formatDateTimeLocal(end);
-  }, [classTypeById, createSessionForm.class_type_id, createSessionForm.start_time]);
-
-  useEffect(() => {
-    if (!showCreateClass) return;
-    if (createSessionForm.max_students) return;
-    const selected = classTypeById.get(String(createSessionForm.class_type_id));
-    const capacity = selected?.max_students;
-    if (typeof capacity === "number") {
-      setCreateSessionForm((prev) => ({ ...prev, max_students: String(capacity) }));
-    }
-  }, [showCreateClass, createSessionForm.class_type_id, createSessionForm.max_students, classTypeById]);
-
   async function handleCreateClassSession(formData) {
-    const teacherId = formData.get("teacher_id")?.toString();
-    const classTypeId = formData.get("class_type_id")?.toString();
-    const startTime = formData.get("start_time")?.toString();
-    const maxStudents = Number(formData.get("max_students"));
-    const meetLink = formData.get("meet_link")?.toString().trim();
+    const teacherId = createSessionForm.teacher_id;
+    const classTypeId = createSessionForm.class_type_id;
 
     if (!teacherId) throw new Error("Teacher is required");
     if (!classTypeId) throw new Error("Bundle is required");
-    if (!startTime) throw new Error("Start time is required");
-    if (!Number.isFinite(maxStudents)) throw new Error("Capacity is required");
 
     const selected = classTypeById.get(String(classTypeId));
-    const durationMinutes = Number(selected?.duration_minutes);
-    const start = parseDateTimeLocal(startTime);
-    if (!selected || !Number.isFinite(durationMinutes) || !start) {
-      throw new Error("Unable to calculate end time from the selected bundle");
-    }
-    const end = new Date(start.getTime() + durationMinutes * 60_000);
-    if (!end || Number.isNaN(end.getTime())) throw new Error("Unable to calculate end time");
+    if (!selected) throw new Error("Selected bundle not found");
 
-    const response = await apiFetch("/api/class-sessions", {
+    const spw = Number(selected.sessions_per_week) || 1;
+    const schedule = createSessionForm.schedule;
+
+    if (!Array.isArray(schedule) || schedule.length !== spw) {
+      throw new Error(`Please fill in all ${spw} schedule slot(s)`);
+    }
+
+    const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const schedulePayload = [];
+    for (let i = 0; i < schedule.length; i++) {
+      const entry = schedule[i];
+      const dow = Number(entry.day_of_week);
+      if (!Number.isInteger(dow) || dow < 0 || dow > 6) {
+        throw new Error(`Slot ${i + 1}: please select a day`);
+      }
+      if (!entry.start_time || !/^\d{2}:\d{2}$/.test(entry.start_time)) {
+        throw new Error(`Slot ${i + 1} (${DAY_NAMES[dow]}): please set a start time`);
+      }
+      schedulePayload.push({
+        day_of_week: dow,
+        start_time: entry.start_time,
+        duration_minutes: Number(selected.duration_minutes) || 60,
+      });
+    }
+
+    const response = await apiFetch("/admin/class-sessions/generate-bundle", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         teacher_id: teacherId,
         class_type_id: classTypeId,
-        start_time: start.toISOString(),
-        end_time: end.toISOString(),
-        max_students: maxStudents,
-        meet_link: meetLink || undefined,
+        bundle_duration_weeks: 4,
+        sessions_per_week: spw,
+        schedule: schedulePayload,
       }),
     });
 
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(normalizeApiError(payload) || "Failed to create class session");
+      throw new Error(normalizeApiError(payload) || "Failed to generate bundle sessions");
     }
 
+    alert(`✅ Created ${payload.total_sessions} sessions for ${payload.class_type} (${payload.weeks} weeks × ${payload.sessions_per_week}/week)`);
     setShowCreateClass(false);
     await loadData();
   }
@@ -529,7 +548,7 @@ export default function AdminClassesPage() {
               onClick={() => setShowCreateClass(true)}
               className="bm-btn-dark"
             >
-              Create class session
+              Create bundle sessions
             </button>
           </div>
         </div>
@@ -852,116 +871,158 @@ export default function AdminClassesPage() {
 
 
         {showCreateClass && (
-          <Modal title="Create class session" onClose={() => setShowCreateClass(false)}>
+          <Modal title="Create bundle sessions" onClose={() => setShowCreateClass(false)}>
             <Form
-              submitLabel="Create"
+              submitLabel={
+                createSessionForm.class_type_id
+                  ? `Create ${(Number(classTypeById.get(String(createSessionForm.class_type_id))?.sessions_per_week) || 1) * 4} sessions (4 weeks)`
+                  : "Create"
+              }
               onSubmit={handleCreateClassSession}
-              fields={(busy) => (
-                <>
-                  <Field label="Teacher">
-                    <select
-                      name="teacher_id"
-                      required
-                      disabled={busy}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
-                      value={createSessionForm.teacher_id}
-                      onChange={(e) =>
-                        setCreateSessionForm((prev) => ({ ...prev, teacher_id: e.target.value }))
-                      }
-                    >
-                      <option value="" disabled>
-                        Select a teacher
-                      </option>
-                      {teachers.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.name || t.email}
-                        </option>
-                      ))}
-                    </select>
-                    {teachers.length === 0 && (
-                      <div className="mt-1 text-xs text-gray-600">
-                        No teachers found.
-                      </div>
-                    )}
-                  </Field>
-                  <Field label="Bundle">
-                    <select
-                      name="class_type_id"
-                      required
-                      disabled={busy}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
-                      value={createSessionForm.class_type_id}
-                      onChange={(e) =>
-                        setCreateSessionForm((prev) => ({ ...prev, class_type_id: e.target.value }))
-                      }
-                    >
-                      <option value="" disabled>
-                        Select a bundle
-                      </option>
-                      {activeClassTypes.map((ct) => (
-                        <option key={ct.id} value={ct.id}>
-                          {ct.name}
-                        </option>
-                      ))}
-                    </select>
-                    {activeClassTypes.length === 0 && (
-                      <div className="mt-1 text-xs text-gray-600">
-                        Create a bundle first at <a href="/admin/bundles" className="underline text-amber-600">Manage Bundles</a>.
-                      </div>
-                    )}
-                  </Field>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Field label="Start time">
-                      <input
-                        name="start_time"
-                        type="datetime-local"
+              fields={(busy) => {
+                const selectedType = classTypeById.get(String(createSessionForm.class_type_id));
+                const spw = Number(selectedType?.sessions_per_week) || 0;
+                const durationMin = Number(selectedType?.duration_minutes) || 60;
+                const DAY_OPTIONS = [
+                  { value: 0, label: "Sunday" },
+                  { value: 1, label: "Monday" },
+                  { value: 2, label: "Tuesday" },
+                  { value: 3, label: "Wednesday" },
+                  { value: 4, label: "Thursday" },
+                  { value: 5, label: "Friday" },
+                  { value: 6, label: "Saturday" },
+                ];
+
+                return (
+                  <>
+                    <Field label="Teacher">
+                      <select
+                        name="teacher_id"
                         required
                         disabled={busy}
-                        className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                        value={createSessionForm.start_time}
+                        className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
+                        value={createSessionForm.teacher_id}
                         onChange={(e) =>
-                          setCreateSessionForm((prev) => ({ ...prev, start_time: e.target.value }))
+                          setCreateSessionForm((prev) => ({ ...prev, teacher_id: e.target.value }))
                         }
-                      />
+                      >
+                        <option value="" disabled>
+                          Select a teacher
+                        </option>
+                        {teachers.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name || t.email}
+                          </option>
+                        ))}
+                      </select>
+                      {teachers.length === 0 && (
+                        <div className="mt-1 text-xs text-gray-600">No teachers found.</div>
+                      )}
                     </Field>
-                    <Field label="Capacity">
-                      <input
-                        name="max_students"
-                        type="number"
-                        min={1}
+
+                    <Field label="Bundle">
+                      <select
+                        name="class_type_id"
                         required
                         disabled={busy}
-                        className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                        placeholder="e.g., 8"
-                        value={createSessionForm.max_students}
+                        className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
+                        value={createSessionForm.class_type_id}
                         onChange={(e) =>
-                          setCreateSessionForm((prev) => ({ ...prev, max_students: e.target.value }))
+                          setCreateSessionForm((prev) => ({
+                            ...prev,
+                            class_type_id: e.target.value,
+                            max_students: "",
+                            schedule: [],
+                          }))
                         }
-                      />
+                      >
+                        <option value="" disabled>
+                          Select a bundle
+                        </option>
+                        {activeClassTypes.map((ct) => (
+                          <option key={ct.id} value={ct.id}>
+                            {ct.name} ({ct.sessions_per_week || 1}×/week, {ct.duration_minutes || 60} min)
+                          </option>
+                        ))}
+                      </select>
+                      {activeClassTypes.length === 0 && (
+                        <div className="mt-1 text-xs text-gray-600">
+                          Create a bundle first at{" "}
+                          <a href="/admin/bundles" className="underline text-amber-600">
+                            Manage Bundles
+                          </a>
+                          .
+                        </div>
+                      )}
                     </Field>
-                  </div>
-                  <Field label="Meet link (optional)">
-                    <input
-                      name="meet_link"
-                      disabled={busy}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                      placeholder="https://meet.google.com/..."
-                      value={createSessionForm.meet_link}
-                      onChange={(e) =>
-                        setCreateSessionForm((prev) => ({ ...prev, meet_link: e.target.value }))
-                      }
-                    />
-                  </Field>
-                  {computedEndTime && (
-                    <div className="text-xs text-gray-600">
-                      Ends at {computedEndTime.replace("T", " ")}
-                    </div>
-                  )}
-                  <div className="text-xs text-gray-600">
-                    End time is calculated from the bundle duration.
-                  </div>
-                </>
-              )}
+
+                    {spw > 0 && (
+                      <>
+                        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                          <strong>{selectedType.name}</strong> — {spw} session{spw > 1 ? "s" : ""}/week × 4 weeks = <strong>{spw * 4} sessions</strong> total.
+                          <br />
+                          Each session is {durationMin} minutes. Google Meet links are generated automatically.
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="text-sm font-semibold text-gray-900">
+                            Weekly schedule ({spw} slot{spw > 1 ? "s" : ""})
+                          </div>
+                          {createSessionForm.schedule.map((slot, idx) => (
+                            <div
+                              key={idx}
+                              className="grid grid-cols-[1fr,1fr] gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3"
+                            >
+                              <Field label={`Day ${idx + 1}`}>
+                                <select
+                                  required
+                                  disabled={busy}
+                                  className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
+                                  value={slot.day_of_week}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setCreateSessionForm((prev) => {
+                                      const schedule = [...prev.schedule];
+                                      schedule[idx] = { ...schedule[idx], day_of_week: val };
+                                      return { ...prev, schedule };
+                                    });
+                                  }}
+                                >
+                                  <option value="" disabled>
+                                    Select day
+                                  </option>
+                                  {DAY_OPTIONS.map((d) => (
+                                    <option key={d.value} value={d.value}>
+                                      {d.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </Field>
+                              <Field label={`Start time ${idx + 1}`}>
+                                <input
+                                  type="time"
+                                  required
+                                  disabled={busy}
+                                  className="w-full rounded-xl border border-gray-200 px-3 py-2"
+                                  value={slot.start_time}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setCreateSessionForm((prev) => {
+                                      const schedule = [...prev.schedule];
+                                      schedule[idx] = { ...schedule[idx], start_time: val };
+                                      return { ...prev, schedule };
+                                    });
+                                  }}
+                                />
+                              </Field>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+                );
+              }}
             />
           </Modal>
         )}
