@@ -11,6 +11,7 @@ import {
   ChevronRight,
   DollarSign,
   AlertCircle,
+  Lock,
 } from "lucide-react";
 import { apiFetch } from "@/utils/apiClient";
 import { useLanguage } from "@/utils/useLanguage";
@@ -59,6 +60,7 @@ export function BookTab() {
   const [error, setError] = useState(null);
   const [booking, setBooking] = useState(null); // session id being booked
   const [booked, setBooked] = useState(new Set()); // session ids already booked
+  const [bookableTypes, setBookableTypes] = useState(null); // class_type_ids student can book
   const [bookError, setBookError] = useState(null); // error message with context
   const [view, setView] = useState("list"); // "list" | "calendar"
   const [calMonth, setCalMonth] = useState(() => {
@@ -77,6 +79,9 @@ export function BookTab() {
       if (!sessRes.ok) throw new Error("Failed to fetch sessions");
       const sessData = await sessRes.json();
       setSessions(sessData.sessions || []);
+      if (Array.isArray(sessData.bookableClassTypeIds)) {
+        setBookableTypes(new Set(sessData.bookableClassTypeIds));
+      }
 
       if (bookRes.ok) {
         const bookData = await bookRes.json();
@@ -175,6 +180,8 @@ export function BookTab() {
     const isFull = seatsLeft <= 0 && !isBooked;
     const price = formatPrice(session.price_cents);
     const mode = session.class_mode || session.session_type || "group";
+    const canBook = !bookableTypes || bookableTypes.has(session.class_type_id);
+    const isLocked = !canBook && !isBooked;
 
     return (
       <div
@@ -182,9 +189,11 @@ export function BookTab() {
         className={`group flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 bg-white rounded-xl border transition-all duration-300 ${
           isBooked
             ? "border-[#3FA9A6]/30 bg-[#3FA9A6]/5"
-            : isFull
+            : isLocked
               ? "border-gray-200 opacity-60"
-              : "border-gray-200/50 hover:shadow-lg"
+              : isFull
+                ? "border-gray-200 opacity-60"
+                : "border-gray-200/50 hover:shadow-lg"
         }`}
       >
         <div className="flex-1 min-w-0 mb-3 sm:mb-0">
@@ -239,6 +248,11 @@ export function BookTab() {
             <span className="inline-flex items-center gap-1.5 bg-[#3FA9A6]/10 text-[#3FA9A6] px-5 py-2 rounded-xl font-medium">
               <CheckCircle2 size={16} />
               {t({ en: "Booked", es: "Reservado" })}
+            </span>
+          ) : isLocked ? (
+            <span className="inline-flex items-center gap-1.5 text-gray-400 px-5 py-2 rounded-xl font-medium" title={t({ en: "Not included in your plan", es: "No incluido en tu plan" })}>
+              <Lock size={16} />
+              {t({ en: "Not in plan", es: "No en tu plan" })}
             </span>
           ) : isFull ? (
             <span className="text-gray-400 font-medium px-5 py-2">
