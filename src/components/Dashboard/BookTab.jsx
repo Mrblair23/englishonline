@@ -63,11 +63,15 @@ export function BookTab() {
   const [bookableTypes, setBookableTypes] = useState(null); // class_type_ids student can book
   const [bookError, setBookError] = useState(null); // error message with context
   const [view, setView] = useState("list"); // "list" | "calendar"
-  const [calMonth, setCalMonth] = useState(() => {
+  const [weekStart, setWeekStart] = useState(() => {
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
+    const day = now.getDay(); // 0=Sun, 1=Mon …
+    const diff = day === 0 ? -6 : 1 - day; // back to Monday
+    const mon = new Date(now);
+    mon.setDate(mon.getDate() + diff);
+    mon.setHours(0, 0, 0, 0);
+    return mon;
   });
-  const [selectedDay, setSelectedDay] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -138,17 +142,16 @@ export function BookTab() {
     [sessions, booked]
   );
 
-  // Calendar helpers
-  const calDays = useMemo(() => {
-    const year = calMonth.getFullYear();
-    const month = calMonth.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // Week helpers
+  const weekDays = useMemo(() => {
     const days = [];
-    for (let i = 0; i < firstDay; i++) days.push(null);
-    for (let d = 1; d <= daysInMonth; d++) days.push(new Date(year, month, d));
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(d.getDate() + i);
+      days.push(d);
+    }
     return days;
-  }, [calMonth]);
+  }, [weekStart]);
 
   const sessionsByDate = useMemo(() => {
     const map = {};
@@ -160,19 +163,129 @@ export function BookTab() {
     return map;
   }, [available]);
 
-  const selectedSessions = selectedDay
-    ? sessionsByDate[selectedDay.toDateString()] || []
-    : [];
+  const prevWeek = () => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() - 7);
+    setWeekStart(d);
+  };
+  const nextWeek = () => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + 7);
+    setWeekStart(d);
+  };
+  const goToThisWeek = () => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const mon = new Date(now);
+    mon.setDate(mon.getDate() + diff);
+    mon.setHours(0, 0, 0, 0);
+    setWeekStart(mon);
+  };
 
-  const prevMonth = () =>
-    setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1));
-  const nextMonth = () =>
-    setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1));
+  const weekEnd = useMemo(() => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + 6);
+    return d;
+  }, [weekStart]);
 
-  const monthLabel = calMonth.toLocaleDateString(language === "es" ? "es" : "en", {
-    month: "long",
-    year: "numeric",
-  });
+  const locale = language === "es" ? "es" : "en";
+  const weekLabel = `${weekStart.toLocaleDateString(locale, { month: "short", day: "numeric" })} – ${weekEnd.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}`;
+
+  const isCurrentWeek = useMemo(() => {
+    const now = new Date();
+    return now >= weekStart && now <= weekEnd;
+  }, [weekStart, weekEnd]);
+
+  const renderDaySession = (session) => {
+    const isBooked = booked.has(session.id);
+    const seatsLeft = parseInt(session.seats_left);
+    const isFull = seatsLeft <= 0 && !isBooked;
+    const canBook = !bookableTypes || bookableTypes.has(session.class_type_id);
+    const isLocked = !canBook && !isBooked;
+    const mode = session.class_mode || session.session_type || "group";
+
+    return (
+      <div
+        key={session.id}
+        className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-all ${
+          isBooked
+            ? "border-[#3FA9A6]/30 bg-[#3FA9A6]/5"
+            : isLocked
+              ? "border-gray-100 bg-gray-50/50 opacity-60"
+              : isFull
+                ? "border-gray-100 bg-gray-50/50 opacity-60"
+                : "border-gray-100 bg-white hover:shadow-sm"
+        }`}
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="font-semibold text-sm text-[#1F2A44] truncate">
+              {session.class_type_name || "Class"}
+            </span>
+            <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded capitalize shrink-0">
+              {mode === "private"
+                ? language === "es" ? "Privada" : "Private"
+                : mode === "duo" ? "Duo"
+                : language === "es" ? "Grupal" : "Group"}
+            </span>
+          </div>
+          <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <Clock size={11} />
+              {formatTime(session.start_time)} – {formatTime(session.end_time)}
+            </span>
+            <span className="text-gray-300">·</span>
+            <span className="flex items-center gap-1">
+              <Users size={11} />
+              {seatsLeft} {t({ en: "left", es: "disp." })}
+            </span>
+            {session.teacher_name && (
+              <>
+                <span className="text-gray-300">·</span>
+                <span className="flex items-center gap-1">
+                  <User size={11} />
+                  {session.teacher_name}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="shrink-0">
+          {isBooked ? (
+            <span className="inline-flex items-center gap-1 text-xs text-[#3FA9A6] font-semibold bg-[#3FA9A6]/10 px-3 py-1.5 rounded-lg">
+              <CheckCircle2 size={13} />
+              {t({ en: "Booked", es: "Reservado" })}
+            </span>
+          ) : isLocked ? (
+            <span
+              className="inline-flex items-center gap-1 text-xs text-gray-400 px-3 py-1.5"
+              title={t({ en: "Not included in your plan", es: "No incluido en tu plan" })}
+            >
+              <Lock size={13} />
+            </span>
+          ) : isFull ? (
+            <span className="text-xs text-gray-400 px-3 py-1.5">
+              {t({ en: "Full", es: "Lleno" })}
+            </span>
+          ) : (
+            <button
+              onClick={() => handleBook(session.id)}
+              disabled={booking === session.id}
+              className="bg-gradient-to-r from-[#F2B705] to-[#f5c642] text-[#1F2A44] px-4 py-1.5 rounded-lg text-xs font-semibold hover:brightness-105 hover:scale-105 transition-all shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {booking === session.id ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <Calendar size={13} />
+              )}
+              <span>{t({ en: "Book", es: "Reservar" })}</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const renderSessionCard = (session) => {
     const isBooked = booked.has(session.id);
@@ -385,7 +498,7 @@ export function BookTab() {
         </div>
       )}
 
-      {/* CALENDAR VIEW */}
+      {/* CALENDAR VIEW — week-based day cards */}
       {view === "calendar" && (
         <div className="mt-4">
           {/* No-plan or error banner */}
@@ -414,97 +527,107 @@ export function BookTab() {
               <button onClick={() => setBookError(null)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
           )}
-          {/* Month navigation */}
-          <div className="flex items-center justify-between mb-4">
+
+          {/* Week navigation */}
+          <div className="flex items-center justify-between mb-5">
             <button
-              onClick={prevMonth}
+              onClick={prevWeek}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Previous week"
             >
               <ChevronLeft size={20} />
             </button>
-            <h3 className="font-poppins font-semibold text-lg text-[#1F2A44] capitalize">
-              {monthLabel}
-            </h3>
+            <div className="text-center">
+              <h3 className="font-poppins font-semibold text-lg text-[#1F2A44]">
+                {weekLabel}
+              </h3>
+              {!isCurrentWeek && (
+                <button
+                  onClick={goToThisWeek}
+                  className="text-xs text-[#3FA9A6] hover:underline font-medium mt-0.5"
+                >
+                  {t({ en: "Back to this week", es: "Volver a esta semana" })}
+                </button>
+              )}
+            </div>
             <button
-              onClick={nextMonth}
+              onClick={nextWeek}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Next week"
             >
               <ChevronRight size={20} />
             </button>
           </div>
 
-          {/* Day headers */}
-          <div className="grid grid-cols-7 mb-1">
-            {(language === "es"
-              ? ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
-              : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-            ).map((d) => (
-              <div
-                key={d}
-                className="text-center text-xs font-semibold text-gray-400 py-2"
-              >
-                {d}
-              </div>
-            ))}
-          </div>
-
-          {/* Day cells */}
-          <div className="grid grid-cols-7 gap-1">
-            {calDays.map((day, i) => {
-              if (!day) return <div key={`empty-${i}`} />;
+          {/* Day cards */}
+          <div className="space-y-3">
+            {weekDays.map((day) => {
               const today = new Date();
               const isToday = isSameDay(day, today);
-              const daySessions = sessionsByDate[day.toDateString()] || [];
-              const isSelected = selectedDay && isSameDay(day, selectedDay);
+              const isPast = day < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+              const daySessions = (sessionsByDate[day.toDateString()] || []).sort(
+                (a, b) => new Date(a.start_time) - new Date(b.start_time)
+              );
+              const dayLabel = day.toLocaleDateString(locale, {
+                weekday: "long",
+                month: "short",
+                day: "numeric",
+              });
+
               return (
-                <button
+                <div
                   key={day.toISOString()}
-                  onClick={() => setSelectedDay(day)}
-                  className={`relative p-2 sm:p-3 rounded-xl text-sm font-medium transition-all ${
-                    isSelected
-                      ? "bg-[#F2B705] text-[#1F2A44] shadow-md"
-                      : isToday
-                        ? "bg-[#3FA9A6]/10 text-[#1F2A44] font-bold"
-                        : "hover:bg-gray-100 text-gray-700"
+                  className={`rounded-2xl border overflow-hidden transition-all ${
+                    isToday
+                      ? "border-[#3FA9A6]/40 shadow-md"
+                      : isPast
+                        ? "border-gray-100 opacity-50"
+                        : "border-gray-200/60"
                   }`}
                 >
-                  {day.getDate()}
-                  {daySessions.length > 0 && (
-                    <span
-                      className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
-                        isSelected ? "bg-[#1F2A44]" : "bg-[#F2B705]"
-                      }`}
-                    />
-                  )}
-                </button>
+                  {/* Day header */}
+                  <div
+                    className={`flex items-center gap-2 px-4 py-2.5 ${
+                      isToday
+                        ? "bg-[#3FA9A6]/10"
+                        : "bg-gray-50"
+                    }`}
+                  >
+                    <span className={`font-semibold text-sm capitalize ${
+                      isToday ? "text-[#3FA9A6]" : "text-[#1F2A44]"
+                    }`}>
+                      {dayLabel}
+                    </span>
+                    {isToday && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#3FA9A6] px-2 py-0.5 rounded-full">
+                        {t({ en: "Today", es: "Hoy" })}
+                      </span>
+                    )}
+                    {daySessions.length > 0 && (
+                      <span className="ml-auto text-xs text-gray-400">
+                        {daySessions.length} {daySessions.length === 1
+                          ? t({ en: "class", es: "clase" })
+                          : t({ en: "classes", es: "clases" })}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Sessions inside day card */}
+                  <div className="px-3 py-2">
+                    {daySessions.length === 0 ? (
+                      <p className="text-xs text-gray-300 py-2 text-center italic">
+                        {t({ en: "No classes", es: "Sin clases" })}
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {daySessions.map(renderDaySession)}
+                      </div>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
-
-          {/* Selected day sessions */}
-          {selectedDay && (
-            <div className="mt-6 border-t border-gray-100 pt-4">
-              <h4 className="font-poppins font-semibold text-[#1F2A44] mb-3">
-                {selectedDay.toLocaleDateString(language === "es" ? "es" : "en", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </h4>
-              {selectedSessions.length === 0 ? (
-                <p className="text-gray-400 text-sm py-4 text-center">
-                  {t({
-                    en: "No sessions available on this day",
-                    es: "No hay sesiones disponibles este día",
-                  })}
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {selectedSessions.map(renderSessionCard)}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>
