@@ -4,7 +4,7 @@ import useAdmin from "@/utils/useAdmin";
 import AdminLayout from "@/components/AdminLayout";
 import { apiFetch } from "@/utils/apiClient";
 
-const MAX_WEEK_OFFSET = 3; // 0 = this week, up to 3 = 4 weeks total
+const MAX_WEEK_OFFSET = 5; // 0 = this week, up to 5 = 6 weeks total (ensures all 4 weeks of generated bundle sessions are always visible)
 
 function pad2(value) {
   return String(value).padStart(2, "0");
