@@ -1,68 +1,64 @@
-import { Users, Briefcase, Clock, TrendingUp } from "lucide-react";
+import { Users, Target, BarChart3 } from "lucide-react";
 
 export function HowItWorksSection({ t }) {
-  const features = [
+  const reasons = [
     {
-      icon: <Users size={28} />,
-      title: t({ en: "EXCLUSIVE GROUPS", es: "GRUPOS EXCLUSIVOS" }),
-      sub: t({ en: "(Adults)", es: "(Adultos)" }),
+      icon: <Users size={32} />,
+      title: t({ en: "Small Groups, Big Results", es: "Grupos Pequeños, Grandes Resultados" }),
       desc: t({
-        en: "Share and grow with professional peers.",
-        es: "Compartir y crecer con pares profesionales.",
+        en: "Maximum 6 adults per class. You speak more, learn faster, and build real confidence in every session.",
+        es: "Máximo 6 adultos por clase. Hablas más, aprendes más rápido y construyes confianza real en cada sesión.",
       }),
     },
     {
-      icon: <Briefcase size={28} />,
-      title: t({ en: "BUSINESS CONVERSATION", es: "CONVERSACIÓN DE NEGOCIOS" }),
-      sub: "",
+      icon: <Target size={32} />,
+      title: t({ en: "Business-Focused Method", es: "Método Enfocado en Negocios" }),
       desc: t({
-        en: "Real practice for meetings and presentations.",
-        es: "Práctica real para reuniones y presentaciones.",
+        en: "Our curriculum targets meetings, presentations, interviews, and workplace conversations — not textbook grammar.",
+        es: "Nuestro plan se enfoca en reuniones, presentaciones, entrevistas y conversaciones laborales — no gramática de libro.",
       }),
     },
     {
-      icon: <Clock size={28} />,
-      title: t({ en: "TOTAL FLEXIBILITY", es: "FLEXIBILIDAD TOTAL" }),
-      sub: "",
+      icon: <BarChart3 size={32} />,
+      title: t({ en: "Measurable Progress", es: "Progreso Medible" }),
       desc: t({
-        en: "Schedules adapted to your work agenda.",
-        es: "Horarios adaptados a tu agenda laboral.",
-      }),
-    },
-    {
-      icon: <TrendingUp size={28} />,
-      title: t({ en: "FAST RESULTS", es: "RESULTADOS ACELERADOS" }),
-      sub: "",
-      desc: t({
-        en: "Achieve professional fluency in record time.",
-        es: "Logra fluidez profesional en tiempo récord.",
+        en: "Track your fluency with monthly assessments. See exactly how much you've improved, with data to prove it.",
+        es: "Mide tu fluidez con evaluaciones mensuales. Ve exactamente cuánto has mejorado, con datos que lo prueban.",
       }),
     },
   ];
 
   return (
-    <section className="relative bg-gradient-to-b from-[#5a8a50] via-[#6a9a60] to-[#7aaa70] py-8 md:py-10">
-      {/* Subtle top curve to blend from hero */}
-      <div className="absolute -top-6 left-0 right-0">
-        <svg viewBox="0 0 1440 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-          <path d="M0 48L1440 48L1440 0C1200 40 720 48 360 30C180 20 60 10 0 0V48Z" fill="#5a8a50" />
-        </svg>
-      </div>
+    <section className="bg-white py-20 md:py-28">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section heading */}
+        <div className="text-center mb-16">
+          <p className="text-[#F5B942] font-semibold text-sm uppercase tracking-widest mb-3">
+            {t({ en: "Why Choose Us", es: "Por Qué Elegirnos" })}
+          </p>
+          <h2 className="font-poppins text-3xl sm:text-4xl font-bold text-[#0B1F3B] mb-4">
+            {t({
+              en: "Built for Professionals Like You",
+              es: "Diseñado para Profesionales Como Tú",
+            })}
+          </h2>
+          <p className="text-gray-500 max-w-2xl mx-auto text-lg">
+            {t({
+              en: "We understand the demands of a professional schedule. That's why every aspect of our program is designed for efficiency and results.",
+              es: "Entendemos las demandas de una agenda profesional. Por eso cada aspecto de nuestro programa está diseñado para eficiencia y resultados.",
+            })}
+          </p>
+        </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {features.map((f, i) => (
-            <div key={i} className="text-center group">
-              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-[#F2B705] group-hover:bg-white/25 transition-colors shadow-lg">
-                {f.icon}
+        {/* 3 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {reasons.map((r, i) => (
+            <div key={i} className="text-center">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-xl bg-[#0B1F3B]/5 flex items-center justify-center text-[#123A6F]">
+                {r.icon}
               </div>
-              <h3 className="font-poppins font-extrabold text-white text-xs sm:text-sm uppercase tracking-wider leading-tight mb-0.5">
-                {f.title}
-              </h3>
-              {f.sub && (
-                <span className="text-white/60 text-[10px] font-bold">{f.sub}</span>
-              )}
-              <p className="text-white/70 text-xs mt-1 leading-relaxed">{f.desc}</p>
+              <h3 className="font-poppins font-bold text-[#0B1F3B] text-lg mb-3">{r.title}</h3>
+              <p className="text-gray-500 leading-relaxed">{r.desc}</p>
             </div>
           ))}
         </div>
