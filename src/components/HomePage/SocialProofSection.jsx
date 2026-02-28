@@ -1,91 +1,93 @@
-import { Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
-const testimonials = [
-  {
-    name: "Maria S.",
-    role: "Software Engineer, Google",
-    text: "The native speakers helped me nail my tech interviews. I got 3 offers in Silicon Valley!",
-    rating: 5,
-  },
-  {
-    name: "Carlos R.",
-    role: "MBA Student, Harvard",
-    text: "From struggling with presentations to leading class discussions. Game changer.",
-    rating: 5,
-  },
-  {
-    name: "Yuki T.",
-    role: "Marketing Director, Tokyo",
-    text: "Finally confident in client calls. My pronunciation improved dramatically in 3 months.",
-    rating: 5,
-  },
-  {
-    name: "Ahmed K.",
-    role: "Medical Resident, Dubai",
-    text: "Passed my medical board exam thanks to the focused teaching approach. Highly recommend!",
-    rating: 5,
-  },
-];
+export function SocialProofSection({ t }) {
+  const testimonials = [
+    {
+      name: "Maria R.",
+      role: t({ en: "Marketing Manager", es: "Gerente de Marketing" }),
+      text: t({
+        en: "After a free evaluation, I knew exactly what level I was at. The personalized attention in small groups made all the difference. Now I lead meetings in English!",
+        es: "Después de mi evaluación gratuita, supe exactamente mi nivel. La atención personalizada en grupos pequeños hizo toda la diferencia. ¡Ahora lidero reuniones en inglés!",
+      }),
+      stars: 5,
+      avatar: "👩‍💼",
+      gradient: "from-[#fce4b8] to-[#f0d4a0]",
+    },
+    {
+      name: "Carlos M.",
+      role: t({ en: "Software Engineer", es: "Ingeniero de Software" }),
+      text: t({
+        en: "I'm having real conversations in English at work now. The flexible schedule fits my busy life, and the teachers are amazing. Best investment in myself!",
+        es: "Ahora tengo conversaciones reales en inglés en el trabajo. El horario flexible se adapta a mi vida ocupada, ¡y los profesores son increíbles!",
+      }),
+      stars: 5,
+      avatar: "��‍💻",
+      gradient: "from-[#b8dce8] to-[#98c4d4]",
+    },
+    {
+      name: "Ana L.",
+      role: t({ en: "University Student", es: "Estudiante Universitaria" }),
+      text: t({
+        en: "I went from barely understanding English to passing my TOEFL with confidence. The small group format helped me practice speaking every single class.",
+        es: "Pasé de apenas entender inglés a aprobar mi TOEFL con confianza. El formato de grupos pequeños me ayudó a practicar conversación en cada clase.",
+      }),
+      stars: 5,
+      avatar: "👩‍��",
+      gradient: "from-[#d8c0e8] to-[#c0a8d4]",
+    },
+  ];
 
-export function SocialProofSection() {
   return (
-    <section className="py-16 bg-white border-y border-gray-200/50 relative">
-      {/* Subtle warm background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-[#FAF9F7]/30 to-white"></div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section className="py-16 md:py-24 bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Heading */}
         <div className="text-center mb-12">
-          <h2 className="font-poppins text-3xl md:text-4xl font-semibold text-[#1F2A44] mb-3 leading-tight">
-            Trusted by professionals worldwide
+          <span className="inline-block bg-[#3FA9A6]/10 text-[#3FA9A6] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4">
+            {t({ en: "Testimonials", es: "Testimonios" })}
+          </span>
+          <h2 className="font-poppins text-3xl sm:text-4xl font-bold text-[#1F2A44] mb-3">
+            {t({
+              en: "What Our Students Say",
+              es: "Lo que Dicen Nuestros Estudiantes",
+            })}
           </h2>
-          <div className="flex items-center justify-center space-x-1 text-[#F2B705]">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} size={20} fill="currentColor" />
-            ))}
-            <span className="ml-2 text-gray-600 font-medium">
-              4.9/5 from 500+ students
-            </span>
-          </div>
+          <p className="text-gray-500 max-w-xl mx-auto">
+            {t({
+              en: "Join hundreds of students who improved their English with us",
+              es: "Únete a cientos de estudiantes que mejoraron su inglés con nosotros",
+            })}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {testimonials.map((testimonial, i) => (
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {testimonials.map((tm, i) => (
             <div
               key={i}
-              className="group bg-gradient-to-br from-white to-[#FAF9F7] p-6 rounded-2xl border border-gray-200/50 shadow-sm hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300"
+              className="relative bg-white rounded-2xl p-6 border border-gray-100 shadow-md hover:shadow-xl transition-shadow"
             >
-              <div className="flex items-center space-x-1 text-[#F2B705] mb-3">
-                {[...Array(testimonial.rating)].map((_, j) => (
-                  <Star key={j} size={14} fill="currentColor" />
-                ))}
-              </div>
-              <p className="text-gray-700 text-sm mb-4 leading-relaxed italic">
-                "{testimonial.text}"
+              <Quote size={28} className="text-[#3FA9A6]/20 mb-3" />
+              <p className="text-gray-600 text-sm leading-relaxed mb-5 italic">
+                "{tm.text}"
               </p>
-              <div>
-                <p className="font-semibold text-[#1F2A44] text-sm">
-                  {testimonial.name}
-                </p>
-                <p className="text-xs text-gray-500">{testimonial.role}</p>
+
+              <div className="flex items-center gap-3 mt-auto">
+                <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${tm.gradient} flex items-center justify-center text-xl`}>
+                  {tm.avatar}
+                </div>
+                <div>
+                  <p className="font-bold text-[#1F2A44] text-sm">{tm.name}</p>
+                  <p className="text-gray-400 text-xs">{tm.role}</p>
+                </div>
+                <div className="ml-auto flex gap-0.5">
+                  {Array.from({ length: tm.stars }).map((_, j) => (
+                    <Star key={j} size={14} className="fill-[#F2B705] text-[#F2B705]" />
+                  ))}
+                </div>
               </div>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Curved separator */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg
-          viewBox="0 0 1440 80"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-auto"
-        >
-          <path
-            d="M0 0L60 8C120 16 240 32 360 37.3C480 43 600 37 720 34.7C840 32 960 32 1080 37.3C1200 43 1320 53 1380 58.7L1440 64V80H1380C1320 80 1200 80 1080 80C960 80 840 80 720 80C600 80 480 80 360 80C240 80 120 80 60 80H0V0Z"
-            fill="#FAF9F7"
-          />
-        </svg>
       </div>
     </section>
   );

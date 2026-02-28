@@ -40,28 +40,23 @@ export default function HomePage() {
         {/* Hero Section */}
         <HeroSection t={t} />
 
-        {/* Social Proof Strip */}
-        <SocialProofSection />
+        {/* Features / Why Choose Us */}
+        <HowItWorksSection t={t} />
 
-        {/* How It Works */}
-        <HowItWorksSection />
-
-        {/* Tier Preview Cards */}
-        <PricingPreviewSection />
+        {/* Social Proof / Testimonials */}
+        <SocialProofSection t={t} />
 
         {/* Results & Promise */}
-        <PromiseSection />
+        <PromiseSection t={t} />
 
-        {/* Lead Magnet Inline Section */}
-        <LeadMagnetInlineSection />
+        {/* Tier Preview Cards */}
+        <PricingPreviewSection t={t} />
 
-        {/* Email Capture Box */}
-        <EmailCaptureSection
-          email={email}
-          setEmail={setEmail}
-          submitted={submitted}
-          handleEmailSubmit={handleEmailSubmit}
-        />
+        {/* CTA Section */}
+        <LeadMagnetInlineSection t={t} />
+
+        {/* (EmailCapture removed – CTA lives in LeadMagnet now) */}
+        <EmailCaptureSection t={t} />
       </div>
 
       <Footer />

@@ -1,137 +1,79 @@
-import { useState, useEffect } from "react";
-import {
-  useCountry,
-  formatPrice,
-  calculatePricePerClass,
-} from "@/utils/useCountry";
-import { useLanguage } from "@/utils/useLanguage";
-import { apiFetch } from "@/utils/apiClient";
+import { useEffect, useState } from "react";
 import { Check, ArrowRight, Sparkles } from "lucide-react";
 
-export function PricingPreviewSection() {
-  const [tiers, setTiers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { country } = useCountry();
-  const { language } = useLanguage();
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
-  const t = (translations) => translations[language] || translations.en;
+export function PricingPreviewSection({ t }) {
+  const [tiers, setTiers] = useState([]);
 
   useEffect(() => {
-    async function fetchPricing() {
-      try {
-        const response = await apiFetch("/pricing");
-        if (!response.ok) throw new Error("Failed to fetch pricing");
-        const data = await response.json();
-        setTiers(data.tiers || []);
-      } catch (error) {
-        console.error("Error fetching pricing:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPricing();
+    fetch(`${API}/pricing`)
+      .then((r) => r.json())
+      .then((d) => setTiers(d.tiers || []))
+      .catch(() => {});
   }, []);
 
-  if (loading) {
-    return (
-      <section className="py-20 px-4 bg-gradient-to-br from-white via-[#F0F9F9] to-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3FA9A6] mx-auto"></div>
-        </div>
-      </section>
-    );
-  }
+  if (!tiers.length) return null;
+
+  const tierMeta = [
+    { color: "border-gray-200", badge: null, highlight: false },
+    { color: "border-[#3FA9A6]", badge: t({ en: "Most Popular", es: "Más Popular" }), highlight: true },
+    { color: "border-gray-200", badge: null, highlight: false },
+  ];
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-white via-[#F0F9F9] to-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold text-[#1F2A44] mb-4">
-            {t({
-              en: "Plans that fit your pace",
-              es: "Planes que se ajustan a tu ritmo",
-            })}
+    <section className="py-16 md:py-24 bg-white">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <span className="inline-block bg-[#3FA9A6]/10 text-[#3FA9A6] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4">
+            {t({ en: "Pricing", es: "Precios" })}
+          </span>
+          <h2 className="font-poppins text-3xl sm:text-4xl font-bold text-[#1F2A44] mb-3">
+            {t({ en: "Simple, Transparent Pricing", es: "Precios Simples y Transparentes" })}
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-500 max-w-xl mx-auto">
             {t({
-              en: `From just ${country === "CO" ? "$100,000 COP" : "$25 USD"} per month — Classes from ${country === "CO" ? "$15,000 COP" : "$3.75 USD"}`,
-              es: `Desde solo ${country === "CO" ? "$100.000 COP" : "$25 USD"} al mes — Clases desde ${country === "CO" ? "$15.000 COP" : "$3.75 USD"}`,
+              en: "Start with a free evaluation — upgrade when you're ready",
+              es: "Comienza con una evaluación gratis — mejora cuando estés listo",
             })}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {tiers.map((tier, index) => {
-            const priceInfo = formatPrice(
-              tier.price_usd,
-              tier.price_cop,
-              country,
-            );
-            const pricePerClass = calculatePricePerClass(
-              tier.price_usd,
-              tier.price_cop,
-              tier.classes_per_week,
-              country,
-            );
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {tiers.map((tier, i) => {
+            const meta = tierMeta[i] || tierMeta[0];
             return (
               <div
-                key={tier.id}
-                className={`relative bg-white rounded-3xl shadow-lg p-8 transition-all hover:shadow-2xl hover:scale-105 ${
-                  tier.is_popular ? "ring-4 ring-[#3FA9A6] ring-opacity-50" : ""
-                }`}
+                key={tier.id || i}
+                className={`relative bg-white rounded-2xl p-6 border-2 ${meta.color} ${meta.highlight ? "shadow-xl scale-[1.03]" : "shadow-sm"} transition-all hover:shadow-lg`}
               >
-                {tier.is_popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#F2B705] to-[#f5c642] text-[#1F2A44] px-6 py-2 rounded-full font-bold text-sm flex items-center space-x-1 shadow-md">
-                    <Sparkles size={16} />
-                    <span>{t({ en: "MOST POPULAR", es: "MÁS POPULAR" })}</span>
-                  </div>
+                {meta.badge && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#3FA9A6] text-white text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1">
+                    <Sparkles size={12} /> {meta.badge}
+                  </span>
                 )}
-
-                <h3 className="text-2xl font-bold text-[#1F2A44] mb-2">
-                  {tier.name}
-                </h3>
-                <p className="text-gray-600 text-sm mb-6">{tier.description}</p>
-
-                <div className="mb-6">
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-4xl font-bold text-[#1F2A44]">
-                      {priceInfo.amount}
-                    </span>
-                    <span className="text-gray-500">
-                      /{t({ en: "month", es: "mes" })}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {priceInfo.subtitle}
-                  </p>
-                  <p className="text-xs text-[#3FA9A6] font-semibold mt-2">
-                    {pricePerClass} {t({ en: "per class", es: "por clase" })}
-                  </p>
+                <h3 className="font-poppins font-bold text-lg text-[#1F2A44] mb-1">{tier.name}</h3>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-[#1F2A44]">${tier.price_per_month || tier.price}</span>
+                  <span className="text-gray-400 text-sm">/{t({ en: "mo", es: "mes" })}</span>
                 </div>
-
-                <ul className="space-y-3 mb-8">
-                  {tier.features.slice(0, 4).map((feature, idx) => (
-                    <li key={idx} className="flex items-start space-x-3">
-                      <Check
-                        className="text-[#3FA9A6] flex-shrink-0 mt-0.5"
-                        size={18}
-                      />
-                      <span className="text-sm text-gray-700">{feature}</span>
+                <ul className="space-y-2 mb-6">
+                  {(tier.features || []).map((feat, j) => (
+                    <li key={j} className="flex items-start gap-2 text-sm text-gray-600">
+                      <Check size={16} className="text-[#3FA9A6] mt-0.5 shrink-0" />
+                      {feat}
                     </li>
                   ))}
                 </ul>
-
                 <a
-                  href="/pricing"
-                  className={`flex items-center justify-center space-x-2 w-full py-3 rounded-xl font-semibold transition-all ${
-                    tier.is_popular
-                      ? "bg-gradient-to-r from-[#3FA9A6] to-[#35918e] text-white shadow-md hover:shadow-xl"
-                      : "bg-[#1F2A44] text-white hover:bg-[#2B3448]"
+                  href="/account/signup"
+                  className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-all ${
+                    meta.highlight
+                      ? "bg-gradient-to-r from-[#F2B705] to-[#f5c642] text-[#1F2A44] hover:shadow-lg"
+                      : "bg-[#1F2A44] text-white hover:bg-[#2a3a5c]"
                   }`}
                 >
-                  <span>{t({ en: "View Details", es: "Ver Detalles" })}</span>
-                  <ArrowRight size={18} />
+                  {t({ en: "Get Started", es: "Comenzar" })}
                 </a>
               </div>
             );
