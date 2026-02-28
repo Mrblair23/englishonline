@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   Calendar,
   ClipboardList,
+  Clock,
   LayoutDashboard,
   LogOut,
   MessageSquare,
@@ -11,6 +12,7 @@ import Footer from "@/components/Footer";
 
 const navItems = [
   { name: "Dashboard", href: "/teacher/dashboard", icon: <LayoutDashboard size={18} /> },
+  { name: "Availability", href: "/teacher/availability", icon: <Clock size={18} /> },
   { name: "Classes", href: "/teacher/classes", icon: <Calendar size={18} /> },
   { name: "Assignments", href: "/teacher/assignments", icon: <ClipboardList size={18} /> },
   { name: "Messages", href: "/teacher/messages", icon: <MessageSquare size={18} /> },

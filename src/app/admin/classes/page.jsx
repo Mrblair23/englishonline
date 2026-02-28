@@ -144,6 +144,13 @@ export default function AdminClassesPage() {
     schedule: [], // [{ day_of_week: "", start_time: "" }]
   });
 
+  // Schedule suggestion state
+  const [useAvailability, setUseAvailability] = useState(true);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionsError, setSuggestionsError] = useState(null);
+  const [selectedSuggestionIdx, setSelectedSuggestionIdx] = useState(null);
+
   useEffect(() => {
     if (!loading && !isAdmin) {
       window.location.href = "/account/signin";
@@ -302,31 +309,88 @@ export default function AdminClassesPage() {
       max_students: "",
       schedule: [],
     });
+    setUseAvailability(true);
+    setSuggestions([]);
+    setSuggestionsError(null);
+    setSelectedSuggestionIdx(null);
   }, [showCreateClass]);
 
-  // When the selected bundle changes, sync schedule slots & capacity
+  // Fetch schedule suggestions when teacher + bundle are both selected (only when availability mode is ON)
+  useEffect(() => {
+    if (!showCreateClass || !useAvailability) {
+      setSuggestions([]);
+      setSuggestionsError(null);
+      setSelectedSuggestionIdx(null);
+      return;
+    }
+    const teacherId = createSessionForm.teacher_id;
+    const classTypeId = createSessionForm.class_type_id;
+    if (!teacherId || !classTypeId) {
+      setSuggestions([]);
+      setSuggestionsError(null);
+      setSelectedSuggestionIdx(null);
+      return;
+    }
+
+    const selected = classTypeById.get(String(classTypeId));
+    if (!selected) return;
+
+    const spw = Number(selected.sessions_per_week) || 1;
+    const mode = (selected.mode || "").toLowerCase();
+    const bundleType = mode === "duo" ? "duo" : `${spw}x`;
+
+    let cancelled = false;
+    setSuggestionsLoading(true);
+    setSuggestionsError(null);
+    setSelectedSuggestionIdx(null);
+    setSuggestions([]);
+    setCreateSessionForm((prev) => ({ ...prev, schedule: [] }));
+
+    apiFetch(`/admin/teachers/${teacherId}/suggested-schedules?bundleType=${bundleType}`)
+      .then(async (res) => {
+        if (cancelled) return;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load suggestions");
+        setSuggestions(data.suggestions || []);
+        if (data.message) setSuggestionsError(data.message);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setSuggestionsError(err.message || "Failed to load schedule suggestions");
+      })
+      .finally(() => {
+        if (!cancelled) setSuggestionsLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [showCreateClass, useAvailability, createSessionForm.teacher_id, createSessionForm.class_type_id, classTypeById]);
+
+  // Auto-resize manual schedule array when availability is OFF and bundle changes
+  useEffect(() => {
+    if (!showCreateClass || useAvailability) return;
+    const selected = classTypeById.get(String(createSessionForm.class_type_id));
+    if (!selected) return;
+    const spw = Number(selected.sessions_per_week) || 1;
+    setCreateSessionForm((prev) => {
+      const current = prev.schedule || [];
+      if (current.length === spw) return prev;
+      const newSchedule = Array.from({ length: spw }, (_, i) =>
+        current[i] || { day_of_week: "", start_time: "" }
+      );
+      return { ...prev, schedule: newSchedule };
+    });
+  }, [showCreateClass, useAvailability, createSessionForm.class_type_id, classTypeById]);
+
+  // Auto-fill capacity from class type when bundle changes
   useEffect(() => {
     if (!showCreateClass) return;
     const selected = classTypeById.get(String(createSessionForm.class_type_id));
     if (!selected) return;
 
-    const spw = Number(selected.sessions_per_week) || 1;
-
     setCreateSessionForm((prev) => {
-      // Resize schedule array to match sessions_per_week
-      let schedule = [...prev.schedule];
-      while (schedule.length < spw) {
-        schedule.push({ day_of_week: "", start_time: "" });
-      }
-      if (schedule.length > spw) {
-        schedule = schedule.slice(0, spw);
-      }
-
-      // Auto-fill capacity from class type if not already set
       const capacity =
         prev.max_students || (typeof selected.max_students === "number" ? String(selected.max_students) : "");
-
-      return { ...prev, schedule, max_students: capacity };
+      return { ...prev, max_students: capacity };
     });
   }, [showCreateClass, createSessionForm.class_type_id, classTypeById]);
 
@@ -362,8 +426,12 @@ export default function AdminClassesPage() {
     const spw = Number(selected.sessions_per_week) || 1;
     const schedule = createSessionForm.schedule;
 
+    if (useAvailability && selectedSuggestionIdx == null) {
+      throw new Error("Please select one of the suggested schedules");
+    }
+
     if (!Array.isArray(schedule) || schedule.length !== spw) {
-      throw new Error(`Please fill in all ${spw} schedule slot(s)`);
+      throw new Error(`Please ${useAvailability ? "select a valid schedule" : "fill in all schedule slots"} (expected ${spw} slot${spw > 1 ? "s" : ""})`);
     }
 
     const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -393,6 +461,7 @@ export default function AdminClassesPage() {
         bundle_duration_weeks: 4,
         sessions_per_week: spw,
         schedule: schedulePayload,
+        ...(!useAvailability ? { skip_availability_check: true } : {}),
       }),
     });
 
@@ -874,24 +943,15 @@ export default function AdminClassesPage() {
           <Modal title="Create bundle sessions" onClose={() => setShowCreateClass(false)}>
             <Form
               submitLabel={
-                createSessionForm.class_type_id
+                createSessionForm.class_type_id && (!useAvailability || selectedSuggestionIdx != null)
                   ? `Create ${(Number(classTypeById.get(String(createSessionForm.class_type_id))?.sessions_per_week) || 1) * 4} sessions (4 weeks)`
-                  : "Create"
+                  : useAvailability ? "Select a schedule below" : "Fill in schedule above"
               }
               onSubmit={handleCreateClassSession}
               fields={(busy) => {
                 const selectedType = classTypeById.get(String(createSessionForm.class_type_id));
                 const spw = Number(selectedType?.sessions_per_week) || 0;
                 const durationMin = Number(selectedType?.duration_minutes) || 60;
-                const DAY_OPTIONS = [
-                  { value: 0, label: "Sunday" },
-                  { value: 1, label: "Monday" },
-                  { value: 2, label: "Tuesday" },
-                  { value: 3, label: "Wednesday" },
-                  { value: 4, label: "Thursday" },
-                  { value: 5, label: "Friday" },
-                  { value: 6, label: "Saturday" },
-                ];
 
                 return (
                   <>
@@ -903,7 +963,13 @@ export default function AdminClassesPage() {
                         className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
                         value={createSessionForm.teacher_id}
                         onChange={(e) =>
-                          setCreateSessionForm((prev) => ({ ...prev, teacher_id: e.target.value }))
+                          setCreateSessionForm((prev) => ({
+                            ...prev,
+                            teacher_id: e.target.value,
+                            class_type_id: prev.class_type_id,
+                            max_students: prev.max_students,
+                            schedule: [],
+                          }))
                         }
                       >
                         <option value="" disabled>
@@ -964,60 +1030,159 @@ export default function AdminClassesPage() {
                           Each session is {durationMin} minutes. Google Meet links are generated automatically.
                         </div>
 
-                        <div className="space-y-3">
-                          <div className="text-sm font-semibold text-gray-900">
-                            Weekly schedule ({spw} slot{spw > 1 ? "s" : ""})
-                          </div>
-                          {createSessionForm.schedule.map((slot, idx) => (
-                            <div
-                              key={idx}
-                              className="grid grid-cols-[1fr,1fr] gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3"
-                            >
-                              <Field label={`Day ${idx + 1}`}>
-                                <select
-                                  required
-                                  disabled={busy}
-                                  className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
-                                  value={slot.day_of_week}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setCreateSessionForm((prev) => {
-                                      const schedule = [...prev.schedule];
-                                      schedule[idx] = { ...schedule[idx], day_of_week: val };
-                                      return { ...prev, schedule };
-                                    });
-                                  }}
-                                >
-                                  <option value="" disabled>
-                                    Select day
-                                  </option>
-                                  {DAY_OPTIONS.map((d) => (
-                                    <option key={d.value} value={d.value}>
-                                      {d.label}
-                                    </option>
-                                  ))}
-                                </select>
-                              </Field>
-                              <Field label={`Start time ${idx + 1}`}>
-                                <input
-                                  type="time"
-                                  required
-                                  disabled={busy}
-                                  className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                                  value={slot.start_time}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setCreateSessionForm((prev) => {
-                                      const schedule = [...prev.schedule];
-                                      schedule[idx] = { ...schedule[idx], start_time: val };
-                                      return { ...prev, schedule };
-                                    });
-                                  }}
-                                />
-                              </Field>
+                        {/* Availability toggle */}
+                        <label className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5 cursor-pointer select-none">
+                          <span className="text-sm font-medium text-gray-700">
+                            Use teacher availability
+                          </span>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={useAvailability}
+                            disabled={busy}
+                            onClick={() => {
+                              setUseAvailability((v) => !v);
+                              setSelectedSuggestionIdx(null);
+                              setCreateSessionForm((prev) => ({ ...prev, schedule: [] }));
+                            }}
+                            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                              useAvailability ? "bg-gray-900" : "bg-gray-300"
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                                useAvailability ? "translate-x-6" : "translate-x-1"
+                              }`}
+                            />
+                          </button>
+                        </label>
+
+                        {/* ── Suggestion-based scheduling (availability ON) ── */}
+                        {useAvailability && (
+                          <div className="space-y-2">
+                            <div className="text-sm font-semibold text-gray-900">
+                              Available schedules
                             </div>
-                          ))}
-                        </div>
+
+                            {suggestionsLoading && (
+                              <div className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-500">
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                                Loading schedule options…
+                              </div>
+                            )}
+
+                            {suggestionsError && !suggestionsLoading && (
+                              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                                {suggestionsError}
+                              </div>
+                            )}
+
+                            {!suggestionsLoading && !suggestionsError && suggestions.length === 0 && (
+                              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
+                                No available schedule options. The teacher may need to add availability first,
+                                or you can turn off the toggle above to enter times manually.
+                              </div>
+                            )}
+
+                            {!suggestionsLoading && suggestions.length > 0 && (
+                              <div className="max-h-64 space-y-1.5 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 p-2">
+                                {suggestions.map((sug, idx) => {
+                                  const isSelected = selectedSuggestionIdx === idx;
+                                  return (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      disabled={busy}
+                                      onClick={() => {
+                                        setSelectedSuggestionIdx(idx);
+                                        const schedule = sug.schedule.map((s) => ({
+                                          day_of_week: String(s.dayOfWeek),
+                                          start_time: s.startTime,
+                                        }));
+                                        setCreateSessionForm((prev) => ({ ...prev, schedule }));
+                                      }}
+                                      className={`w-full text-left rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                                        isSelected
+                                          ? "bg-gray-900 text-white shadow-sm"
+                                          : "bg-white text-gray-800 border border-gray-200 hover:border-gray-400 hover:bg-gray-100"
+                                      }`}
+                                    >
+                                      {sug.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {selectedSuggestionIdx != null && (
+                              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+                                ✓ Selected: <strong>{suggestions[selectedSuggestionIdx]?.label}</strong>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* ── Manual schedule inputs (availability OFF) ── */}
+                        {!useAvailability && (
+                          <div className="space-y-2">
+                            <div className="text-sm font-semibold text-gray-900">
+                              Manual schedule ({spw} slot{spw > 1 ? "s" : ""})
+                            </div>
+                            <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-500">
+                              Availability check is off — you can choose any day and time.
+                            </div>
+                            {(createSessionForm.schedule || []).map((entry, idx) => {
+                              const DAY_OPTIONS = [
+                                { value: "0", label: "Sunday" },
+                                { value: "1", label: "Monday" },
+                                { value: "2", label: "Tuesday" },
+                                { value: "3", label: "Wednesday" },
+                                { value: "4", label: "Thursday" },
+                                { value: "5", label: "Friday" },
+                                { value: "6", label: "Saturday" },
+                              ];
+                              return (
+                                <div key={idx} className="flex items-center gap-2">
+                                  <span className="shrink-0 text-xs font-medium text-gray-500 w-14">
+                                    Slot {idx + 1}
+                                  </span>
+                                  <select
+                                    disabled={busy}
+                                    className="flex-1 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm"
+                                    value={entry.day_of_week}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setCreateSessionForm((prev) => {
+                                        const next = [...prev.schedule];
+                                        next[idx] = { ...next[idx], day_of_week: val };
+                                        return { ...prev, schedule: next };
+                                      });
+                                    }}
+                                  >
+                                    <option value="" disabled>Day</option>
+                                    {DAY_OPTIONS.map((d) => (
+                                      <option key={d.value} value={d.value}>{d.label}</option>
+                                    ))}
+                                  </select>
+                                  <input
+                                    type="time"
+                                    disabled={busy}
+                                    className="flex-1 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm"
+                                    value={entry.start_time}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setCreateSessionForm((prev) => {
+                                        const next = [...prev.schedule];
+                                        next[idx] = { ...next[idx], start_time: val };
+                                        return { ...prev, schedule: next };
+                                      });
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </>
                     )}
                   </>
