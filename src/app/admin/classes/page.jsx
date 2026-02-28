@@ -141,6 +141,8 @@ export default function AdminClassesPage() {
     teacher_id: "",
     class_type_id: "",
     max_students: "",
+    class_name: "",
+    level: "",
     schedule: [], // [{ day_of_week: "", start_time: "" }]
   });
 
@@ -164,7 +166,7 @@ export default function AdminClassesPage() {
     try {
       const [typesRes, sessionsRes, teachersRes] = await Promise.all([
         apiFetch("/api/class-types"),
-        apiFetch("/api/class-sessions"),
+        apiFetch("/admin/class-sessions"),
         apiFetch("/admin/teachers"),
       ]);
 
@@ -307,6 +309,8 @@ export default function AdminClassesPage() {
       teacher_id: "",
       class_type_id: "",
       max_students: "",
+      class_name: "",
+      level: "",
       schedule: [],
     });
     setUseAvailability(true);
@@ -461,6 +465,8 @@ export default function AdminClassesPage() {
         bundle_duration_weeks: 4,
         sessions_per_week: spw,
         schedule: schedulePayload,
+        ...(createSessionForm.class_name?.trim() ? { class_name: createSessionForm.class_name.trim() } : {}),
+        ...(createSessionForm.level ? { level: createSessionForm.level } : {}),
         ...(!useAvailability ? { skip_availability_check: true } : {}),
       }),
     });
@@ -470,7 +476,7 @@ export default function AdminClassesPage() {
       throw new Error(normalizeApiError(payload) || "Failed to generate bundle sessions");
     }
 
-    alert(`✅ Created ${payload.total_sessions} sessions for ${payload.class_type} (${payload.weeks} weeks × ${payload.sessions_per_week}/week)`);
+    alert(`✅ Created ${payload.total_sessions} sessions for "${payload.class_name}" (${payload.weeks} weeks × ${payload.sessions_per_week}/week)`);
     setShowCreateClass(false);
     await loadData();
   }
@@ -760,47 +766,67 @@ export default function AdminClassesPage() {
                                 setSelectedSession(session);
                                 setShowEditSession(true);
                               }}
-                              className="w-full text-left rounded-none bg-white border border-gray-200 p-2 hover:bg-gray-50"
+                              className={`w-full text-left rounded-xl bg-white border p-2.5 hover:bg-gray-50 transition-all ${
+                                getSessionStatus(session) === "cancelled"
+                                  ? "border-rose-200 opacity-60"
+                                  : "border-gray-200"
+                              }`}
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <div className="text-sm font-medium text-gray-900 truncate">
-                                  {session.title || session.class_type_name || "Class session"}
+                                <div className="text-sm font-semibold text-gray-900 truncate">
+                                  {session.className || session.class_name || session.class_type_name || "Class session"}
                                 </div>
                                 <div className="text-xs text-gray-600 whitespace-nowrap">
                                   {formatTime(getSessionStart(session))}–{formatTime(getSessionEnd(session))}
                                 </div>
                               </div>
-                              <div className="mt-1 text-xs text-gray-600">
+                              {/* Teacher */}
+                              {(() => {
+                                const teacherName = session.teacherName || session.teacher_name || teacherById.get(String(getSessionTeacherId(session)))?.name;
+                                return teacherName ? (
+                                  <div className="mt-1 flex items-center gap-1 text-xs text-indigo-600">
+                                    <span className="inline-block w-3 h-3 rounded-full bg-indigo-100 text-[8px] font-bold text-indigo-600 flex items-center justify-center shrink-0">T</span>
+                                    {teacherName}
+                                  </div>
+                                ) : null;
+                              })()}
+                              {/* Level badge */}
+                              {(session.level) && (
+                                <span className={`inline-block mt-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                  session.level === "beginner" ? "bg-green-50 text-green-700"
+                                  : session.level === "intermediate" ? "bg-amber-50 text-amber-700"
+                                  : "bg-red-50 text-red-700"
+                                }`}>
+                                  {session.level}
+                                </span>
+                              )}
+                              {/* Booked students */}
+                              <div className="mt-1 text-xs text-gray-500">
                                 {(() => {
-                                  const teacher = teacherById.get(String(getSessionTeacherId(session)));
-                                  const maxFromType =
-                                    typeof session.class_type_max_students === "number"
-                                      ? session.class_type_max_students
-                                      : typeof classTypeById.get(String(getSessionClassTypeId(session)))?.max_students === "number"
-                                        ? classTypeById.get(String(getSessionClassTypeId(session))).max_students
-                                        : null;
-                                  const booked = typeof session.booked_count === "number" ? session.booked_count : null;
-                                  const available =
-                                    typeof maxFromType === "number" && typeof booked === "number"
-                                      ? Math.max(0, maxFromType - booked)
-                                      : typeof session.seats_left === "number"
-                                        ? session.seats_left
-                                        : null;
+                                  const students = session.bookedStudents || session.booked_students || [];
+                                  const bookedNum = session.bookedCount ?? session.booked_count ?? students.length;
+                                  const cap = getSessionCapacity(session) ??
+                                    (typeof session.class_type_max_students === "number" ? session.class_type_max_students
+                                    : classTypeById.get(String(getSessionClassTypeId(session)))?.max_students);
 
-                                  const parts = [];
-                                  if (session.class_type_name) parts.push(session.class_type_name);
-                                  if (teacher) parts.push(teacher.name || teacher.email);
-                                  if (available != null && maxFromType != null) {
-                                    parts.push(`${available}/${maxFromType} seats available`);
-                                  } else if (available != null) {
-                                    parts.push(`${available} seats available`);
+                                  if (students.length > 0) {
+                                    const names = students.map((s) => s.name || s.email).join(", ");
+                                    return (
+                                      <span title={names}>
+                                        👤 {names}
+                                        {cap != null ? ` (${bookedNum}/${cap})` : ""}
+                                      </span>
+                                    );
                                   }
-                                  if (getSessionStatus(session) === "cancelled") {
-                                    parts.push("Cancelled");
+                                  if (cap != null) {
+                                    return <span>{bookedNum}/{cap} seats</span>;
                                   }
-                                  return parts.join(" • ");
+                                  return null;
                                 })()}
                               </div>
+                              {getSessionStatus(session) === "cancelled" && (
+                                <div className="mt-1 text-[10px] font-semibold text-rose-600 uppercase">Cancelled</div>
+                              )}
                             </button>
                           ))}
                         </div>
@@ -968,6 +994,8 @@ export default function AdminClassesPage() {
                             teacher_id: e.target.value,
                             class_type_id: prev.class_type_id,
                             max_students: prev.max_students,
+                            class_name: prev.class_name,
+                            level: prev.level,
                             schedule: [],
                           }))
                         }
@@ -998,6 +1026,8 @@ export default function AdminClassesPage() {
                             ...prev,
                             class_type_id: e.target.value,
                             max_students: "",
+                            class_name: prev.class_name,
+                            level: prev.level,
                             schedule: [],
                           }))
                         }
@@ -1024,6 +1054,40 @@ export default function AdminClassesPage() {
 
                     {spw > 0 && (
                       <>
+                        {/* Class name & level */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <Field label="Class name (optional)">
+                            <input
+                              type="text"
+                              disabled={busy}
+                              placeholder="e.g. Group A – Morning"
+                              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                              value={createSessionForm.class_name}
+                              onChange={(e) =>
+                                setCreateSessionForm((prev) => ({ ...prev, class_name: e.target.value }))
+                              }
+                            />
+                            <div className="mt-0.5 text-[10px] text-gray-400">
+                              Auto-generated if empty
+                            </div>
+                          </Field>
+                          <Field label="Level (optional)">
+                            <select
+                              disabled={busy}
+                              className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white text-sm"
+                              value={createSessionForm.level}
+                              onChange={(e) =>
+                                setCreateSessionForm((prev) => ({ ...prev, level: e.target.value }))
+                              }
+                            >
+                              <option value="">No level</option>
+                              <option value="beginner">Beginner</option>
+                              <option value="intermediate">Intermediate</option>
+                              <option value="advanced">Advanced</option>
+                            </select>
+                          </Field>
+                        </div>
+
                         <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
                           <strong>{selectedType.name}</strong> — {spw} session{spw > 1 ? "s" : ""}/week × 4 weeks = <strong>{spw * 4} sessions</strong> total.
                           <br />

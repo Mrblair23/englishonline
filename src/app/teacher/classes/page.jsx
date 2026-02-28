@@ -154,7 +154,7 @@ function SessionRow({ session, onNotesSaved }) {
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-800">
-              {session.classType?.name || "Class"}{" "}
+              {session.className || session.classType?.name || "Class"}{" "}
               <span className="font-normal text-gray-500">· {dur} min</span>
             </p>
             <p className="text-xs text-gray-500">
@@ -163,6 +163,9 @@ function SessionRow({ session, onNotesSaved }) {
               {end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               {" · "}
               {session.bookedCount ?? 0}/{session.capacity} students
+              {session.bookedStudents && session.bookedStudents.length > 0 && (
+                <> — {session.bookedStudents.map(s => s.name || s.email).join(", ")}</>
+              )}
             </p>
           </div>
         </div>
@@ -176,6 +179,15 @@ function SessionRow({ session, onNotesSaved }) {
           <span className="rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-semibold text-teal-700">
             {modeBadge}
           </span>
+          {session.level && (
+            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+              session.level === "beginner" ? "bg-green-100 text-green-700"
+              : session.level === "intermediate" ? "bg-amber-100 text-amber-700"
+              : "bg-red-100 text-red-700"
+            }`}>
+              {session.level}
+            </span>
+          )}
           <StatusBadge status={session.status} />
           {session.note && (
             <span title="Has notes">

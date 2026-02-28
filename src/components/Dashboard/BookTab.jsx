@@ -71,6 +71,8 @@ function groupSessionsByBundle(sessions) {
     if (!bundleMap.has(key)) {
       bundleMap.set(key, {
         bundleId: s.bundle_id || null,
+        className: s.class_name || null,
+        level: s.level || null,
         classTypeName: s.class_type_name,
         classTypeId: s.class_type_id,
         classMode: s.class_mode || s.session_type || "group",
@@ -255,6 +257,15 @@ export function BookTab() {
                   : mode === "duo" ? "Duo"
                   : (language === "es" ? "Grupal" : "Group")}
               </span>
+              {bundle.level && (
+                <span className={`text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-lg ${
+                  bundle.level === "beginner" ? "bg-green-50 text-green-700"
+                  : bundle.level === "intermediate" ? "bg-amber-50 text-amber-700"
+                  : "bg-red-50 text-red-700"
+                }`}>
+                  {bundle.level}
+                </span>
+              )}
               {bundle.bundleId && (
                 <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-lg">
                   {totalSessions} {t({ en: "sessions", es: "sesiones" })}
@@ -262,7 +273,7 @@ export function BookTab() {
               )}
             </div>
             <h3 className="font-poppins font-semibold text-[#1F2A44] text-lg leading-tight">
-              {bundle.classTypeName || "Class Session"}
+              {bundle.className || bundle.classTypeName || "Class Session"}
             </h3>
             <div className="flex items-center flex-wrap gap-3 text-sm text-gray-600 mt-1">
               <span className="flex items-center gap-1">
