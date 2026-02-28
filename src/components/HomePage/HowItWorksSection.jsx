@@ -1,64 +1,77 @@
-import { Users, Target, BarChart3 } from "lucide-react";
-
 export function HowItWorksSection({ t }) {
-  const reasons = [
+  const cards = [
     {
-      icon: <Users size={32} />,
-      title: t({ en: "Small Groups, Big Results", es: "Grupos Pequeños, Grandes Resultados" }),
+      emoji: "🏠",
+      bg: "from-[#ffecd2] to-[#fcb69f]",
+      border: "border-[#fcb69f]",
+      title: t({ en: "Small & Cozy Groups", es: "Grupos Pequeños y Acogedores" }),
       desc: t({
-        en: "Maximum 6 adults per class. You speak more, learn faster, and build real confidence in every session.",
-        es: "Máximo 6 adultos por clase. Hablas más, aprendes más rápido y construyes confianza real en cada sesión.",
+        en: "Just 4–6 adults per class. Everyone gets to speak, laugh, and grow together. It feels like learning with friends!",
+        es: "Solo 4–6 adultos por clase. Todos hablan, ríen y crecen juntos. ¡Se siente como aprender con amigos!",
       }),
     },
     {
-      icon: <Target size={32} />,
-      title: t({ en: "Business-Focused Method", es: "Método Enfocado en Negocios" }),
+      emoji: "🎯",
+      bg: "from-[#a1c4fd] to-[#c2e9fb]",
+      border: "border-[#a1c4fd]",
+      title: t({ en: "Real Conversations", es: "Conversaciones Reales" }),
       desc: t({
-        en: "Our curriculum targets meetings, presentations, interviews, and workplace conversations — not textbook grammar.",
-        es: "Nuestro plan se enfoca en reuniones, presentaciones, entrevistas y conversaciones laborales — no gramática de libro.",
+        en: "No boring textbooks. We practice real scenarios — work meetings, travel, daily life. Stuff you actually need!",
+        es: "Sin libros aburridos. Practicamos escenarios reales — reuniones, viajes, vida diaria. ¡Cosas que realmente necesitas!",
       }),
     },
     {
-      icon: <BarChart3 size={32} />,
-      title: t({ en: "Measurable Progress", es: "Progreso Medible" }),
+      emoji: "📈",
+      bg: "from-[#d4fc79] to-[#96e6a1]",
+      border: "border-[#96e6a1]",
+      title: t({ en: "See Your Progress", es: "Ve Tu Progreso" }),
       desc: t({
-        en: "Track your fluency with monthly assessments. See exactly how much you've improved, with data to prove it.",
-        es: "Mide tu fluidez con evaluaciones mensuales. Ve exactamente cuánto has mejorado, con datos que lo prueban.",
+        en: "Track your improvement with fun milestones. Watch yourself go from 'umm...' to 'let me explain!' 💪",
+        es: "Sigue tu mejora con hitos divertidos. Mírate pasar de 'umm...' a '¡déjame explicar!' 💪",
+      }),
+    },
+    {
+      emoji: "🌍",
+      bg: "from-[#fbc2eb] to-[#a6c1ee]",
+      border: "border-[#fbc2eb]",
+      title: t({ en: "Native Teachers", es: "Profesores Nativos" }),
+      desc: t({
+        en: "Our teachers aren't just qualified — they're friendly, patient, and genuinely excited to help you succeed.",
+        es: "Nuestros profesores no solo están calificados — son amigables, pacientes y realmente emocionados de ayudarte.",
       }),
     },
   ];
 
   return (
-    <section className="bg-white py-20 md:py-28">
+    <section className="bg-white py-20 md:py-28 relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section heading */}
-        <div className="text-center mb-16">
-          <p className="text-[#F5B942] font-semibold text-sm uppercase tracking-widest mb-3">
-            {t({ en: "Why Choose Us", es: "Por Qué Elegirnos" })}
-          </p>
-          <h2 className="font-poppins text-3xl sm:text-4xl font-bold text-[#0B1F3B] mb-4">
+        {/* Heading */}
+        <div className="text-center mb-14">
+          <span className="text-4xl mb-4 block">🤔</span>
+          <h2 className="font-poppins text-3xl sm:text-4xl font-black text-[#2d1b69] mb-3">
             {t({
-              en: "Built for Professionals Like You",
-              es: "Diseñado para Profesionales Como Tú",
+              en: "Why You'll Love Learning Here",
+              es: "Por Qué Te Encantará Aprender Aquí",
             })}
           </h2>
-          <p className="text-gray-500 max-w-2xl mx-auto text-lg">
+          <p className="text-[#5a4a7a] text-lg max-w-xl mx-auto">
             {t({
-              en: "We understand the demands of a professional schedule. That's why every aspect of our program is designed for efficiency and results.",
-              es: "Entendemos las demandas de una agenda profesional. Por eso cada aspecto de nuestro programa está diseñado para eficiencia y resultados.",
+              en: "We made English learning feel like hanging out — not homework.",
+              es: "Hicimos que aprender inglés se sienta como pasarla bien — no como tarea.",
             })}
           </p>
         </div>
 
-        {/* 3 columns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {reasons.map((r, i) => (
-            <div key={i} className="text-center">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-xl bg-[#0B1F3B]/5 flex items-center justify-center text-[#123A6F]">
-                {r.icon}
-              </div>
-              <h3 className="font-poppins font-bold text-[#0B1F3B] text-lg mb-3">{r.title}</h3>
-              <p className="text-gray-500 leading-relaxed">{r.desc}</p>
+        {/* Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {cards.map((c, i) => (
+            <div
+              key={i}
+              className={`rounded-3xl bg-gradient-to-br ${c.bg} p-7 border-2 ${c.border} hover:scale-[1.02] hover:shadow-xl transition-all duration-300 cursor-default`}
+            >
+              <span className="text-4xl mb-4 block">{c.emoji}</span>
+              <h3 className="font-poppins font-bold text-[#2d1b69] text-xl mb-2">{c.title}</h3>
+              <p className="text-[#4a3a6a] leading-relaxed">{c.desc}</p>
             </div>
           ))}
         </div>

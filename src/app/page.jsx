@@ -13,7 +13,7 @@ export default function HomePage() {
   const t = (translations) => translations[language] || translations.en;
 
   return (
-    <div className="min-h-screen bg-white font-inter selection:bg-[#123A6F] selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-white font-inter selection:bg-[#7c3aed] selection:text-white overflow-x-hidden">
       <Header />
 
       {/* Sticky Mobile CTA */}
@@ -21,19 +21,19 @@ export default function HomePage() {
 
       {/* Main content */}
       <div className="w-full max-w-full overflow-x-hidden">
-        {/* Hero: dark blue gradient + meeting mockup */}
+        {/* Hero: warm pastel gradient + cartoon video call */}
         <HeroSection t={t} />
 
-        {/* Why Choose Us: 3 columns */}
+        {/* Why You'll Love It: colorful gradient cards */}
         <HowItWorksSection t={t} />
 
-        {/* 5-Minute Assessment */}
+        {/* 5-Minute Fun Assessment */}
         <SocialProofSection t={t} />
 
-        {/* Programs: Small Group, Duo, 1-to-1 */}
+        {/* Programs: cozy gradient cards */}
         <PricingPreviewSection t={t} />
 
-        {/* Final CTA: dark blue + strong call to action */}
+        {/* Final CTA: purple gradient, playful */}
         <PromiseSection t={t} />
       </div>
 

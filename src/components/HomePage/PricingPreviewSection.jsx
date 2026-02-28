@@ -1,117 +1,110 @@
-import { ArrowRight, Users, UserPlus, User } from "lucide-react";
-
 export function PricingPreviewSection({ t }) {
   const programs = [
     {
-      icon: <Users size={28} />,
+      emoji: "👥",
       name: t({ en: "Small Group", es: "Grupo Pequeño" }),
       schedule: t({ en: "2x or 3x per week", es: "2 o 3 veces por semana" }),
       desc: t({
-        en: "Practice in a focused group of 4–6 professionals. Build fluency through structured conversation and real scenarios.",
-        es: "Practica en un grupo enfocado de 4–6 profesionales. Desarrolla fluidez a través de conversación estructurada y escenarios reales.",
+        en: "Learn with 4–6 new friends. Lots of speaking, lots of laughing, lots of progress!",
+        es: "Aprende con 4–6 nuevos amigos. ¡Mucha conversación, muchas risas, mucho progreso!",
       }),
-      features: [
-        t({ en: "4–6 students per class", es: "4–6 estudiantes por clase" }),
-        t({ en: "50-minute sessions", es: "Sesiones de 50 minutos" }),
-        t({ en: "Native instructor", es: "Instructor nativo" }),
+      tags: [
+        t({ en: "4–6 students", es: "4–6 estudiantes" }),
+        t({ en: "50 min", es: "50 min" }),
+        t({ en: "Native teacher", es: "Profesor nativo" }),
       ],
-      popular: true,
+      bg: "from-[#ffecd2] to-[#fcb69f]",
+      border: "border-[#fcb69f]",
+      badge: "�� " + t({ en: "Most Popular", es: "Más Popular" }),
     },
     {
-      icon: <UserPlus size={28} />,
+      emoji: "👫",
       name: t({ en: "Duo", es: "Dúo" }),
-      schedule: t({ en: "Flexible scheduling", es: "Horario flexible" }),
+      schedule: t({ en: "Flexible days", es: "Días flexibles" }),
       desc: t({
-        en: "Study with a partner. More personalized attention while keeping costs accessible. Ideal for colleagues or friends.",
-        es: "Estudia con un compañero. Más atención personalizada manteniendo costos accesibles. Ideal para colegas o amigos.",
+        en: "Grab a friend or colleague! Semi-private sessions with maximum attention and custom content.",
+        es: "¡Trae a un amigo o colega! Sesiones semi-privadas con máxima atención y contenido personalizado.",
       }),
-      features: [
-        t({ en: "2 students per class", es: "2 estudiantes por clase" }),
-        t({ en: "50-minute sessions", es: "Sesiones de 50 minutos" }),
-        t({ en: "Custom curriculum", es: "Currículo personalizado" }),
+      tags: [
+        t({ en: "2 students", es: "2 estudiantes" }),
+        t({ en: "50 min", es: "50 min" }),
+        t({ en: "Custom plan", es: "Plan personalizado" }),
       ],
-      popular: false,
+      bg: "from-[#a1c4fd] to-[#c2e9fb]",
+      border: "border-[#a1c4fd]",
+      badge: null,
     },
     {
-      icon: <User size={28} />,
+      emoji: "🌟",
       name: t({ en: "1-to-1", es: "1 a 1" }),
       schedule: t({ en: "Your schedule", es: "Tu horario" }),
       desc: t({
-        en: "Maximum results, maximum flexibility. Every session is tailored to your specific goals, pace, and industry.",
-        es: "Máximos resultados, máxima flexibilidad. Cada sesión está adaptada a tus metas específicas, ritmo e industria.",
+        en: "All eyes on you! 100% personalized sessions tailored to your goals, pace, and industry.",
+        es: "¡Toda la atención para ti! Sesiones 100% personalizadas a tus metas, ritmo e industria.",
       }),
-      features: [
-        t({ en: "Private sessions", es: "Sesiones privadas" }),
-        t({ en: "Fully customized", es: "Totalmente personalizado" }),
-        t({ en: "Priority scheduling", es: "Horario prioritario" }),
+      tags: [
+        t({ en: "Private", es: "Privado" }),
+        t({ en: "Fully custom", es: "100% a tu medida" }),
+        t({ en: "Priority booking", es: "Reserva prioritaria" }),
       ],
-      popular: false,
+      bg: "from-[#fbc2eb] to-[#a6c1ee]",
+      border: "border-[#fbc2eb]",
+      badge: null,
     },
   ];
 
   return (
-    <section className="bg-white py-20 md:py-28">
+    <section className="bg-white py-20 md:py-28 relative overflow-hidden">
+      {/* Floating decorations */}
+      <div className="absolute top-10 right-10 text-4xl opacity-30 animate-bounce" style={{ animationDuration: '4s' }}>🎈</div>
+      <div className="absolute bottom-10 left-10 text-4xl opacity-30 animate-bounce" style={{ animationDuration: '3.5s' }}>🌈</div>
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section heading */}
-        <div className="text-center mb-16">
-          <p className="text-[#F5B942] font-semibold text-sm uppercase tracking-widest mb-3">
-            {t({ en: "Programs", es: "Programas" })}
-          </p>
-          <h2 className="font-poppins text-3xl sm:text-4xl font-bold text-[#0B1F3B] mb-4">
+        <div className="text-center mb-14">
+          <span className="text-4xl mb-4 block">🎓</span>
+          <h2 className="font-poppins text-3xl sm:text-4xl font-black text-[#2d1b69] mb-3">
             {t({
-              en: "Choose the Format That Fits Your Life",
-              es: "Elige el Formato Que Se Adapta a Tu Vida",
+              en: "Pick Your Perfect Program",
+              es: "Elige Tu Programa Perfecto",
             })}
           </h2>
-          <p className="text-gray-500 max-w-2xl mx-auto text-lg">
+          <p className="text-[#5a4a7a] text-lg max-w-xl mx-auto">
             {t({
-              en: "Every program includes certified native instructors, progress tracking, and access to our resource library.",
-              es: "Cada programa incluye instructores nativos certificados, seguimiento de progreso y acceso a nuestra biblioteca de recursos.",
+              en: "Whatever your style, we've got the right fit. All programs include native teachers & progress tracking.",
+              es: "Sea cual sea tu estilo, tenemos la opción perfecta. Todos los programas incluyen profesores nativos y seguimiento.",
             })}
           </p>
         </div>
 
-        {/* Program cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {programs.map((p, i) => (
             <div
               key={i}
-              className={`rounded-2xl p-8 border transition-shadow hover:shadow-lg ${
-                p.popular
-                  ? "border-[#F5B942] shadow-md bg-white ring-1 ring-[#F5B942]/20"
-                  : "border-gray-100 bg-white shadow-sm"
-              }`}
+              className={`rounded-3xl bg-gradient-to-br ${p.bg} p-6 border-2 ${p.border} hover:scale-[1.02] hover:shadow-xl transition-all duration-300 flex flex-col`}
             >
-              {p.popular && (
-                <span className="inline-block bg-[#F5B942] text-[#0B1F3B] text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
-                  {t({ en: "Most Popular", es: "Más Popular" })}
+              {p.badge && (
+                <span className="self-start bg-white/80 backdrop-blur-sm text-[#e84393] text-xs font-black px-3 py-1 rounded-full mb-3 shadow-sm">
+                  {p.badge}
                 </span>
               )}
-              <div className="w-12 h-12 rounded-xl bg-[#0B1F3B]/5 flex items-center justify-center text-[#123A6F] mb-4">
-                {p.icon}
-              </div>
-              <h3 className="font-poppins font-bold text-[#0B1F3B] text-xl mb-1">{p.name}</h3>
-              <p className="text-[#F5B942] text-sm font-semibold mb-3">{p.schedule}</p>
-              <p className="text-gray-500 text-sm leading-relaxed mb-6">{p.desc}</p>
+              <span className="text-5xl mb-3">{p.emoji}</span>
+              <h3 className="font-poppins font-black text-[#2d1b69] text-2xl mb-1">{p.name}</h3>
+              <p className="text-[#7c3aed] text-sm font-bold mb-3">{p.schedule}</p>
+              <p className="text-[#4a3a6a] text-sm leading-relaxed mb-5 flex-1">{p.desc}</p>
 
-              <ul className="space-y-2 mb-8">
-                {p.features.map((f, j) => (
-                  <li key={j} className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#123A6F] shrink-0" />
-                    {f}
-                  </li>
+              <div className="flex flex-wrap gap-2 mb-5">
+                {p.tags.map((tag, j) => (
+                  <span key={j} className="bg-white/60 text-[#2d1b69] text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm">
+                    {tag}
+                  </span>
                 ))}
-              </ul>
+              </div>
 
               <a
                 href="/pricing"
-                className={`block text-center py-3 rounded-lg font-semibold text-sm transition-colors ${
-                  p.popular
-                    ? "bg-[#F5B942] text-[#0B1F3B] hover:bg-[#f7c95e]"
-                    : "bg-[#0B1F3B] text-white hover:bg-[#123A6F]"
-                }`}
+                className="block text-center py-3 bg-white/80 backdrop-blur-sm rounded-2xl font-bold text-sm text-[#2d1b69] hover:bg-white hover:shadow-md transition-all border border-white/60"
               >
-                {t({ en: "Learn More", es: "Más Información" })}
+                {t({ en: "See Details ✨", es: "Ver Detalles ✨" })}
               </a>
             </div>
           ))}
