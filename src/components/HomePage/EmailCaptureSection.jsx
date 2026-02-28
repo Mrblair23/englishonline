@@ -1,3 +1,3 @@
-export function EmailCaptureSection({ t }) {
+export function EmailCaptureSection() {
   return null;
 }

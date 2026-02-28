@@ -1,79 +1,68 @@
-import { Users, Calendar, MessageCircle, Zap } from "lucide-react";
+import { Users, Briefcase, Clock, TrendingUp } from "lucide-react";
 
 export function HowItWorksSection({ t }) {
   const features = [
     {
       icon: <Users size={28} />,
-      title: t({ en: "Small Exclusive Groups", es: "Grupos Pequeños Exclusivos" }),
+      title: t({ en: "EXCLUSIVE GROUPS", es: "GRUPOS EXCLUSIVOS" }),
+      sub: t({ en: "(Adults)", es: "(Adultos)" }),
       desc: t({
-        en: "Adults only, in a friendly small group — no crowded classrooms. Maximum 6 students per class for real practice.",
-        es: "Solo adultos, en un grupo pequeño y amigable — sin aulas saturadas. Máximo 6 estudiantes por clase para práctica real.",
+        en: "Share and grow with professional peers.",
+        es: "Compartir y crecer con pares profesionales.",
       }),
-      color: "bg-[#3FA9A6]/10 text-[#3FA9A6]",
     },
     {
-      icon: <MessageCircle size={28} />,
-      title: t({ en: "Focus on Speaking", es: "Enfoque en Conversación" }),
+      icon: <Briefcase size={28} />,
+      title: t({ en: "BUSINESS CONVERSATION", es: "CONVERSACIÓN DE NEGOCIOS" }),
+      sub: "",
       desc: t({
-        en: "Real conversation practice with native teachers. Build confidence speaking English from day one.",
-        es: "Práctica de conversación real con profesores nativos. Desarrolla confianza hablando inglés desde el día uno.",
+        en: "Real practice for meetings and presentations.",
+        es: "Práctica real para reuniones y presentaciones.",
       }),
-      color: "bg-[#F2B705]/10 text-[#F2B705]",
     },
     {
-      icon: <Calendar size={28} />,
-      title: t({ en: "Flexible Schedule", es: "Horario Flexible" }),
+      icon: <Clock size={28} />,
+      title: t({ en: "TOTAL FLEXIBILITY", es: "FLEXIBILIDAD TOTAL" }),
+      sub: "",
       desc: t({
-        en: "Choose the schedule that works for you. Morning, afternoon, or evening — we adapt to your life.",
-        es: "Elige el horario que mejor te funcione. Mañana, tarde o noche — nos adaptamos a tu vida.",
+        en: "Schedules adapted to your work agenda.",
+        es: "Horarios adaptados a tu agenda laboral.",
       }),
-      color: "bg-[#6366f1]/10 text-[#6366f1]",
     },
     {
-      icon: <Zap size={28} />,
-      title: t({ en: "Fast Results", es: "Resultados Rápidos" }),
+      icon: <TrendingUp size={28} />,
+      title: t({ en: "FAST RESULTS", es: "RESULTADOS ACELERADOS" }),
+      sub: "",
       desc: t({
-        en: "See measurable progress in weeks, not months. Our method is designed for adult learners.",
-        es: "Ve progreso medible en semanas, no meses. Nuestro método está diseñado para adultos.",
+        en: "Achieve professional fluency in record time.",
+        es: "Logra fluidez profesional en tiempo récord.",
       }),
-      color: "bg-[#ec4899]/10 text-[#ec4899]",
     },
   ];
 
   return (
-    <section className="py-16 md:py-24 bg-[#FAF9F7]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Heading */}
-        <div className="text-center mb-12">
-          <span className="inline-block bg-[#F2B705]/10 text-[#F2B705] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4">
-            {t({ en: "Why Choose Us", es: "¿Por Qué Elegirnos?" })}
-          </span>
-          <h2 className="font-poppins text-3xl sm:text-4xl font-bold text-[#1F2A44] mb-3">
-            {t({
-              en: "Everything You Need to Succeed",
-              es: "Todo lo que Necesitas para Tener Éxito",
-            })}
-          </h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            {t({
-              en: "Our method is built around what adult learners actually need",
-              es: "Nuestro método está diseñado alrededor de lo que los adultos realmente necesitan",
-            })}
-          </p>
-        </div>
+    <section className="relative bg-gradient-to-b from-[#5a8a50] via-[#6a9a60] to-[#7aaa70] py-8 md:py-10">
+      {/* Subtle top curve to blend from hero */}
+      <div className="absolute -top-6 left-0 right-0">
+        <svg viewBox="0 0 1440 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+          <path d="M0 48L1440 48L1440 0C1200 40 720 48 360 30C180 20 60 10 0 0V48Z" fill="#5a8a50" />
+        </svg>
+      </div>
 
-        {/* Feature cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {features.map((f, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-            >
-              <div className={`w-14 h-14 rounded-2xl ${f.color} flex items-center justify-center mb-4`}>
+            <div key={i} className="text-center group">
+              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-[#F2B705] group-hover:bg-white/25 transition-colors shadow-lg">
                 {f.icon}
               </div>
-              <h3 className="font-poppins font-bold text-[#1F2A44] mb-2">{f.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+              <h3 className="font-poppins font-extrabold text-white text-xs sm:text-sm uppercase tracking-wider leading-tight mb-0.5">
+                {f.title}
+              </h3>
+              {f.sub && (
+                <span className="text-white/60 text-[10px] font-bold">{f.sub}</span>
+              )}
+              <p className="text-white/70 text-xs mt-1 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
