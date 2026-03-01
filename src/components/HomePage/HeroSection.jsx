@@ -90,42 +90,49 @@ export function HeroSection({ t }) {
           {/* Right: Cozy illustration — video call with cartoon characters */}
           <div className="relative flex items-center justify-center">
             {/* Main card */}
-            <div className="relative bg-white rounded-[2rem] shadow-2xl border-4 border-[#e8dff5] p-3 max-w-sm mx-auto lg:max-w-md w-full">
+            <div className="relative bg-white rounded-[2rem] shadow-2xl border-4 border-[#b2dfdb] p-3 max-w-sm mx-auto lg:max-w-md w-full">
               {/* Window bar */}
-              <div className="bg-gradient-to-r from-[#a78bfa] to-[#c084fc] rounded-t-2xl px-4 py-2.5 flex items-center gap-2">
+              <div className="bg-gradient-to-r from-[#0d9488] to-[#14b8a6] rounded-t-2xl px-4 py-2.5 flex items-center gap-2">
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-[#fca5a5]" />
                   <span className="w-3 h-3 rounded-full bg-[#fde68a]" />
                   <span className="w-3 h-3 rounded-full bg-[#86efac]" />
                 </div>
-                <span className="text-white font-bold text-sm ml-2">🎓 Be More English</span>
-                <div className="ml-auto">
+                <span className="text-white font-bold text-sm ml-2 tracking-wider">BE MORE</span>
+                <div className="ml-auto flex items-center gap-2">
                   <span className="bg-white/20 rounded-lg px-2 py-0.5 text-white text-xs font-bold">LIVE 🔴</span>
+                  <svg className="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                 </div>
               </div>
 
-              {/* 2x2 participant grid */}
+              {/* 2x2 participant grid — cartoon avatars */}
               <div className="grid grid-cols-2 gap-2 p-2">
                 {[
-                  { name: "Sarah 🇺🇸", role: t({ en: "Teacher", es: "Profesora" }), bg: "from-[#ffecd2] to-[#fcb69f]", emoji: "👩‍🏫", size: "text-5xl" },
-                  { name: "Carlos 🇲🇽", role: t({ en: "Student", es: "Estudiante" }), bg: "from-[#a1c4fd] to-[#c2e9fb]", emoji: "👨‍💻", size: "text-5xl" },
-                  { name: "Yuki 🇯🇵", role: t({ en: "Student", es: "Estudiante" }), bg: "from-[#d4fc79] to-[#96e6a1]", emoji: "👩‍🎓", size: "text-5xl" },
-                  { name: "Ahmed 🇪🇬", role: t({ en: "Student", es: "Estudiante" }), bg: "from-[#fbc2eb] to-[#a6c1ee]", emoji: "👨‍🔬", size: "text-5xl" },
+                  { name: "Sarah", country: "USA", role: t({ en: "Teacher", es: "Profesora" }), bg: "from-[#ffecd2] to-[#fcb69f]", seed: "Aneka" },
+                  { name: "Carlos", country: "México", role: t({ en: "Student", es: "Estudiante" }), bg: "from-[#a1c4fd] to-[#c2e9fb]", seed: "Felix" },
+                  { name: "Yuki", country: "Japan", role: t({ en: "Student", es: "Estudiante" }), bg: "from-[#d4fc79] to-[#96e6a1]", seed: "Brooklynn" },
+                  { name: "Ahmed", country: "Egypt", role: t({ en: "Student", es: "Estudiante" }), bg: "from-[#fbc2eb] to-[#a6c1ee]", seed: "Leo" },
                 ].map((p, i) => (
-                  <div key={i} className={`relative rounded-2xl bg-gradient-to-br ${p.bg} p-3 flex flex-col items-center justify-center aspect-square`}>
-                    <span className={`${p.size} mb-1 drop-shadow-md`}>{p.emoji}</span>
-                    <p className="text-[11px] font-bold text-gray-700 text-center leading-tight">{p.name}</p>
-                    <p className="text-[9px] text-gray-500 font-semibold">{p.role}</p>
+                  <div key={i} className={`relative rounded-2xl bg-gradient-to-br ${p.bg} p-2 flex flex-col items-center justify-center aspect-square overflow-hidden`}>
+                    <img
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.seed}&backgroundColor=transparent`}
+                      alt={p.name}
+                      className="w-[70%] h-auto mb-0.5 drop-shadow-lg"
+                      loading="lazy"
+                    />
+                    <div className="bg-black/40 backdrop-blur-sm rounded-lg px-2 py-0.5 text-center">
+                      <p className="text-[10px] font-bold text-white leading-tight">{p.name} ({p.country})</p>
+                    </div>
                     {i === 0 && (
-                      <span className="absolute top-2 left-2 bg-[#f59e0b] text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">HOST</span>
+                      <span className="absolute top-1.5 left-1.5 bg-[#f59e0b] text-white text-[7px] font-black px-1.5 py-0.5 rounded-full shadow">HOST</span>
                     )}
                   </div>
                 ))}
               </div>
 
               {/* Chat bubble */}
-              <div className="mx-2 mb-2 bg-[#f0ebff] rounded-2xl px-4 py-2.5 border border-[#e8dff5]">
-                <p className="text-xs text-[#5a4a7a]">
+              <div className="mx-2 mb-2 bg-[#e6fffa] rounded-2xl px-4 py-2.5 border border-[#b2dfdb]">
+                <p className="text-xs text-[#2d6b63]">
                   <span className="font-bold">Sarah:</span>{" "}
                   {t({
                     en: "Great job everyone! Your pronunciation is getting so much better! 🎉",
