@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import useAdmin from "@/utils/useAdmin";
 import AdminLayout from "@/components/AdminLayout";
 import { apiFetch } from "@/utils/apiClient";
-import { UserSquare, Plus, Mail, Calendar, Edit, BookOpen } from "lucide-react";
+import { UserSquare, Plus, Mail, Calendar, Edit, BookOpen, Clock, ChevronDown, ChevronUp } from "lucide-react";
 
 function formatDate(value) {
   if (!value) return "—";
@@ -24,6 +24,20 @@ function formatTime(value) {
   }).format(date);
 }
 
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function formatAvailTime(time) {
+  if (!time) return "";
+  // time comes as "HH:MM:SS" or "HH:MM"
+  const [h, m] = time.split(":");
+  const hour = Number(h);
+  const minute = m || "00";
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h12 = hour % 12 || 12;
+  return `${h12}:${minute} ${ampm}`;
+}
+
 export default function AdminTeachersPage() {
   const { isAdmin, loading } = useAdmin();
   const [teachers, setTeachers] = useState([]);
@@ -32,6 +46,9 @@ export default function AdminTeachersPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
   const [error, setError] = useState(null);
+  const [teacherAvailability, setTeacherAvailability] = useState({}); // { [teacherId]: availability[] }
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [expandedTeacher, setExpandedTeacher] = useState(null);
 
   useEffect(() => {
     if (!loading && !isAdmin) {
@@ -77,6 +94,35 @@ export default function AdminTeachersPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Fetch availability for all teachers after teacher list loads
+  useEffect(() => {
+    if (teachers.length === 0) return;
+    let cancelled = false;
+    setAvailabilityLoading(true);
+
+    Promise.all(
+      teachers.map((t) =>
+        apiFetch(`/admin/teachers/${t.id}/availability`)
+          .then(async (res) => {
+            if (!res.ok) return { id: t.id, availability: [] };
+            const data = await res.json();
+            return { id: t.id, availability: data.availability || [] };
+          })
+          .catch(() => ({ id: t.id, availability: [] }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      const map = {};
+      for (const r of results) {
+        map[r.id] = r.availability;
+      }
+      setTeacherAvailability(map);
+      setAvailabilityLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [teachers]);
 
   const createTeacher = async (formData) => {
     try {
@@ -175,7 +221,7 @@ export default function AdminTeachersPage() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-2xl p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -211,6 +257,17 @@ export default function AdminTeachersPage() {
                 </p>
               </div>
               <Calendar size={32} className="text-green-500" />
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">With Availability</p>
+                <p className="text-3xl font-bold text-[#3FA9A6]">
+                  {Object.values(teacherAvailability).filter((a) => a.length > 0).length}
+                </p>
+              </div>
+              <Clock size={32} className="text-[#3FA9A6]" />
             </div>
           </div>
         </div>
@@ -281,14 +338,63 @@ export default function AdminTeachersPage() {
                         {teacherClasses.length} classes
                       </span>
                     </div>
-                    <button
-                      onClick={() => setEditingTeacher(teacher)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Edit teacher"
-                    >
-                      <Edit size={18} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setExpandedTeacher(expandedTeacher === teacher.id ? null : teacher.id)}
+                        className="p-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors"
+                        title="View availability"
+                      >
+                        <Clock size={18} />
+                        {expandedTeacher === teacher.id ? <ChevronUp size={14} className="inline ml-0.5" /> : <ChevronDown size={14} className="inline ml-0.5" />}
+                      </button>
+                      <button
+                        onClick={() => setEditingTeacher(teacher)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit teacher"
+                      >
+                        <Edit size={18} />
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Availability Section */}
+                  {expandedTeacher === teacher.id && (
+                    <div className="mt-2 pt-3 border-t border-gray-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock size={14} className="text-[#3FA9A6]" />
+                        <p className="text-xs font-semibold text-gray-700">
+                          Weekly Availability
+                        </p>
+                      </div>
+                      {availabilityLoading ? (
+                        <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
+                          <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                          Loading…
+                        </div>
+                      ) : (teacherAvailability[teacher.id] || []).length === 0 ? (
+                        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-700">
+                          No availability set. Teacher needs to add their schedule at{" "}
+                          <span className="font-semibold">Teacher → Availability</span>.
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          {teacherAvailability[teacher.id].map((block) => (
+                            <div
+                              key={block.id}
+                              className="flex items-center justify-between rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5"
+                            >
+                              <span className="text-xs font-medium text-emerald-800">
+                                {DAY_NAMES[block.day_of_week] || `Day ${block.day_of_week}`}
+                              </span>
+                              <span className="text-xs text-emerald-700">
+                                {formatAvailTime(block.start_time)} – {formatAvailTime(block.end_time)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {teacherClasses.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-gray-200">

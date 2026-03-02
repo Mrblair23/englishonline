@@ -21,8 +21,8 @@ export default function AdminSettingsPage() {
   const { isAdmin, loading } = useAdmin();
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [pricingPlans, setPricingPlans] = useState([]);
-  const [loadingPlans, setLoadingPlans] = useState(true);
+  const [bundles, setBundles] = useState([]);
+  const [loadingBundles, setLoadingBundles] = useState(true);
   const [classTypes, setClassTypes] = useState([]);
   const [loadingClassTypes, setLoadingClassTypes] = useState(true);
   const [classTypeError, setClassTypeError] = useState(null);
@@ -36,22 +36,22 @@ export default function AdminSettingsPage() {
     }
   }, [isAdmin, loading]);
 
-  // Load pricing plans
+  // Load bundles (class types)
   useEffect(() => {
-    async function loadPlans() {
+    async function loadBundles() {
       try {
-        const response = await apiFetch("/pricing");
-        if (!response.ok) throw new Error("Failed to load plans");
+        const response = await apiFetch("/api/class-types");
+        if (!response.ok) throw new Error("Failed to load bundles");
         const data = await response.json();
-        setPricingPlans(data.tiers || []);
+        setBundles(Array.isArray(data.bundles) ? data.bundles : []);
       } catch (error) {
-        console.error("Error loading plans:", error);
+        console.error("Error loading bundles:", error);
       } finally {
-        setLoadingPlans(false);
+        setLoadingBundles(false);
       }
     }
     if (isAdmin) {
-      loadPlans();
+      loadBundles();
     }
   }, [isAdmin]);
 
@@ -80,24 +80,12 @@ export default function AdminSettingsPage() {
     loadClassTypes();
   }, [loadClassTypes]);
 
-  const updatePlanPrice = (planId, field, value) => {
-    setPricingPlans((plans) =>
-      plans.map((plan) =>
-        plan.id === planId ? { ...plan, [field]: parseInt(value) || 0 } : plan,
-      ),
-    );
-  };
-
   const saveSettings = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      // Save pricing plans
-      const response = await apiFetch("/admin/pricing", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plans: pricingPlans }),
-      });
+      // Settings save (bundles are managed on the Pricing page)
+      const response = await Promise.resolve({ ok: true });
 
       if (!response.ok) throw new Error("Failed to save");
 
@@ -290,70 +278,65 @@ export default function AdminSettingsPage() {
             )}
           </div>
 
-          {/* Pricing Settings */}
+          {/* Pricing — Bundles overview */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200">
-            <div className="flex items-center gap-3 mb-6">
-              <DollarSign size={24} className="text-green-600" />
-              <h2 className="text-xl font-bold text-gray-900">Pricing Plans</h2>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <DollarSign size={24} className="text-green-600" />
+                <h2 className="text-xl font-bold text-gray-900">Bundle Pricing</h2>
+              </div>
+              <a
+                href="/admin/pricing"
+                className="text-sm font-semibold text-amber-600 hover:underline"
+              >
+                Manage pricing →
+              </a>
             </div>
 
-            {loadingPlans ? (
+            {loadingBundles ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#3FA9A6] mx-auto"></div>
               </div>
+            ) : bundles.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+                No bundles yet.{" "}
+                <a href="/admin/pricing" className="text-amber-600 underline">Create one</a>.
+              </div>
             ) : (
-              <div className="space-y-6">
-                {pricingPlans.map((plan) => (
+              <div className="space-y-3">
+                {bundles.map((bundle) => (
                   <div
-                    key={plan.id}
+                    key={bundle.id}
                     className="p-4 border-2 border-gray-100 rounded-xl hover:border-[#3FA9A6] transition-colors"
                   >
-                    <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                      {plan.name}
-                      {plan.is_popular && (
-                        <span className="text-xs bg-[#F2B705] text-[#1F2A44] px-2 py-1 rounded-lg font-bold">
-                          POPULAR
-                        </span>
-                      )}
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg">
-                        {plan.class_type === "private" ? "Private" : "Group"} •{" "}
-                        {plan.classes_per_week}x/week
-                      </span>
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Price (USD)
-                        </label>
-                        <input
-                          type="number"
-                          value={plan.price_usd || 0}
-                          onChange={(e) =>
-                            updatePlanPrice(
-                              plan.id,
-                              "price_usd",
-                              e.target.value,
-                            )
-                          }
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#3FA9A6]"
-                        />
+                        <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                          {bundle.name}
+                          <span className={`text-xs px-2 py-1 rounded-lg font-semibold ${
+                            bundle.mode === "private" ? "bg-violet-50 text-violet-700"
+                              : bundle.mode === "duo" ? "bg-sky-50 text-sky-700"
+                              : "bg-emerald-50 text-emerald-700"
+                          }`}>
+                            {bundle.mode === "private" ? "Private" : bundle.mode === "duo" ? "Duo" : "Group"}
+                          </span>
+                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg">
+                            {bundle.sessions_per_week}x/week • {bundle.duration_minutes} min
+                          </span>
+                        </h3>
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Price (COP)
-                        </label>
-                        <input
-                          type="number"
-                          value={plan.price_cop || 0}
-                          onChange={(e) =>
-                            updatePlanPrice(
-                              plan.id,
-                              "price_cop",
-                              e.target.value,
-                            )
-                          }
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#3FA9A6]"
-                        />
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-gray-900">
+                          ${((bundle.price_per_student_cents ?? 0) / 100).toFixed(2)}
+                          <span className="text-xs font-normal text-gray-500 ml-1">
+                            USD / {bundle.price_model === "per_session" ? "session" : "month"}
+                          </span>
+                        </p>
+                        <span className={`text-xs font-semibold ${
+                          bundle.is_active ? "text-emerald-600" : "text-rose-500"
+                        }`}>
+                          {bundle.is_active ? "Active" : "Inactive"}
+                        </span>
                       </div>
                     </div>
                   </div>
